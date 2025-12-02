@@ -112,10 +112,15 @@ suspend fun getGoodNews(): GoodNews? {
             model = "sonar-pro",
             messages = listOf(
                 Message(
+                    role = "system",
+                    content = "DO NOT use markdown"
+                ),
+                Message(
                     role = "user",
                     content = """Please find a good news.
 
-Send it in json format to me.
+Send it in clear json format to me.
+DO NOT use markdown
 The message should start from "{" and end by "}"
 json must have ONLY title, date, and content fields
 text should translate to russian
@@ -135,12 +140,12 @@ text should translate to russian
         // Убираем markdown обертку ```json ... ```
         val jsonContent = rawContent.trim().let { content ->
             when {
-                content.startsWith("```json") && content.endsWith("```") -> {
-                    content.removePrefix("```json").removeSuffix("```").trim()
-                }
-                content.startsWith("```") && content.endsWith("```") -> {
-                    content.removePrefix("```").removeSuffix("```").trim()
-                }
+//                content.startsWith("```json") && content.endsWith("```") -> {
+//                    content.removePrefix("```json").removeSuffix("```").trim()
+//                }
+//                content.startsWith("```") && content.endsWith("```") -> {
+//                    content.removePrefix("```").removeSuffix("```").trim()
+//                }
                 else -> content
             }
         }
