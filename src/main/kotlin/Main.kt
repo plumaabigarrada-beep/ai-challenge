@@ -108,48 +108,19 @@ suspend fun getGoodNews(): GoodNews? {
     }
 
     return try {
-        val schema = buildJsonObject {
-            put("type", "object")
-            put("properties", buildJsonObject {
-                put("title", buildJsonObject { put("type", "string") })
-                put("content", buildJsonObject { put("type", "string") })
-                put("date", buildJsonObject { put("type", "string") })
-            })
-            put("required", kotlinx.serialization.json.JsonArray(
-                listOf(
-                    JsonPrimitive("title"),
-                    JsonPrimitive("content"),
-                    JsonPrimitive("date")
-                )
-            ))
-        }
-
-        val themes = listOf(
-            "животные",
-            "природа",
-            "экология",
-            "дети",
-            "бездомные",
-            "сироты",
-            "образование",
-            "медицина",
-            "маленькие милые события",
-            "обычные люди",
-            "космос",
-            "какая-гибудь"
-        )
-
         val request = PerplexityRequest(
             model = "sonar-pro",
             messages = listOf(
                 Message(
                     role = "user",
-                    content = "Найди одну свежую добрую и милую новость за последние дни в мире. Тема: ${themes.random()}. Верни title (заголовок), content (краткое описание 2-3 предложения) и date (дата в формате YYYY-MM-DD). Результат переведи на русский."
+                    content = """Please find a good news.
+
+Send it in json format to me.
+The message should start from "{" and end by "}"
+json must have ONLY title, date, and content fields
+text should translate to russian
+"""
                 )
-            ),
-            responseFormat = ResponseFormat(
-                type = "json_schema",
-                jsonSchema = JsonSchema(schema)
             )
         )
 
@@ -159,8 +130,48 @@ suspend fun getGoodNews(): GoodNews? {
             setBody(request)
         }.body()
 
-        val jsonContent = response.choices.firstOrNull()?.message?.content ?: return null
-        jsonParser.decodeFromString<GoodNews>(jsonContent)
+        val rawContent = response.choices.firstOrNull()?.message?.content ?: return null
+
+        // Убираем markdown обертку ```json ... ```
+        val jsonContent = rawContent.trim().let { content ->
+            when {
+                content.startsWith("```json") && content.endsWith("```") -> {
+                    content.removePrefix("```json").removeSuffix("```").trim()
+                }
+                content.startsWith("```") && content.endsWith("```") -> {
+                    content.removePrefix("```").removeSuffix("```").trim()
+                }
+                else -> content
+            }
+        }
+
+        try {
+            jsonParser.decodeFromString<GoodNews>(jsonContent)
+        } catch (e: Exception) {
+            println("╔════════════════════════════════════════════════════════════╗")
+            println("║                  ОШИБКА ПАРСИНГА JSON                      ║")
+            println("╠════════════════════════════════════════════════════════════╣")
+            println("║ Не удалось распарсить ответ от Perplexity.                ║")
+            println("║ Ошибка: ${e.message?.take(44)?.padEnd(44)}║")
+            println("╠════════════════════════════════════════════════════════════╣")
+            println("║ Сырой ответ:                                              ║")
+            println("╠════════════════════════════════════════════════════════════╣")
+
+            // Выводим сырой ответ построчно
+            jsonContent.lines().forEach { line ->
+                if (line.length <= 58) {
+                    println("║ ${line.padEnd(58)} ║")
+                } else {
+                    // Если строка слишком длинная, разбиваем её
+                    line.chunked(58).forEach { chunk ->
+                        println("║ ${chunk.padEnd(58)} ║")
+                    }
+                }
+            }
+
+            println("╚════════════════════════════════════════════════════════════╝")
+            null
+        }
     } catch (e: Exception) {
         println("Ошибка получения новости: ${e.message}")
         null
