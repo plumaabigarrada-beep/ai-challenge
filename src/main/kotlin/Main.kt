@@ -59,19 +59,31 @@ data class PerplexityResponse(
     val created: Long? = null
 )
 
-@Serializable
-data class GoodNews(
-    val title: String,
-    val content: String,
-    val date: String
-)
-
 val jsonParser = Json {
     ignoreUnknownKeys = true
     prettyPrint = true
 }
 
-suspend fun askPerplexity(query: String): String {
+val SYSTEM_PROMPT = """You are a character creation engine for a Dungeons & Dragons game. You build a character based on the following set of characteristics:
+
+Height
+Weight
+Age
+Race
+Wings (yes/no)
+The user must provide all the data. If even one of the items is missing, ask the user for the missing information.
+
+Once all items are filled in, display the character's characteristics.
+
+In your first message, request all characteristics at once.
+
+If the user does not provide all characteristics at once, ask for them one by one with each message.
+
+After all characteristics are provided, display them to the user and offer additional characteristics. Keep offering additional characteristics until the user says they are sufficient.
+
+Only after the user explicitly finishes the process, display the final version with additional characteristics."""
+
+suspend fun chatWithAI(conversationHistory: MutableList<Message>): String? {
     val client = HttpClient(CIO) {
         install(ContentNegotiation) {
             json(jsonParser)
@@ -81,9 +93,7 @@ suspend fun askPerplexity(query: String): String {
     return try {
         val request = PerplexityRequest(
             model = "sonar-pro",
-            messages = listOf(
-                Message(role = "user", content = query)
-            )
+            messages = conversationHistory
         )
 
         val response: PerplexityResponse = client.post(API_URL) {
@@ -92,93 +102,17 @@ suspend fun askPerplexity(query: String): String {
             setBody(request)
         }.body()
 
-        response.choices.firstOrNull()?.message?.content ?: "No response from AI"
+        response.choices.firstOrNull()?.message?.content
     } catch (e: Exception) {
-        "Error: ${e.message}"
-    } finally {
-        client.close()
-    }
-}
-
-suspend fun getGoodNews(): GoodNews? {
-    val client = HttpClient(CIO) {
-        install(ContentNegotiation) {
-            json(jsonParser)
+        println("╔════════════════════════════════════════════════════════════╗")
+        println("║                        ОШИБКА                              ║")
+        println("╠════════════════════════════════════════════════════════════╣")
+        val errorMsg = "Ошибка: ${e.message}"
+        val errorLines = wrapText(errorMsg, 58)
+        errorLines.forEach { line ->
+            println("║ ${padEndVisual(line, 58)} ║")
         }
-    }
-
-    return try {
-        val request = PerplexityRequest(
-            model = "sonar-pro",
-            messages = listOf(
-                Message(
-                    role = "system",
-                    content = "DO NOT use markdown"
-                ),
-                Message(
-                    role = "user",
-                    content = """Please find a good news.
-
-Send it in clear json format to me.
-DO NOT use markdown
-The message should start from "{" and end by "}"
-json must have ONLY title, date, and content fields
-text should translate to russian
-"""
-                )
-            )
-        )
-
-        val response: PerplexityResponse = client.post(API_URL) {
-            contentType(ContentType.Application.Json)
-            header("Authorization", "Bearer $API_KEY")
-            setBody(request)
-        }.body()
-
-        val rawContent = response.choices.firstOrNull()?.message?.content ?: return null
-
-        // Убираем markdown обертку ```json ... ```
-        val jsonContent = rawContent.trim().let { content ->
-            when {
-//                content.startsWith("```json") && content.endsWith("```") -> {
-//                    content.removePrefix("```json").removeSuffix("```").trim()
-//                }
-//                content.startsWith("```") && content.endsWith("```") -> {
-//                    content.removePrefix("```").removeSuffix("```").trim()
-//                }
-                else -> content
-            }
-        }
-
-        try {
-            jsonParser.decodeFromString<GoodNews>(jsonContent)
-        } catch (e: Exception) {
-            println("╔════════════════════════════════════════════════════════════╗")
-            println("║                  ОШИБКА ПАРСИНГА JSON                      ║")
-            println("╠════════════════════════════════════════════════════════════╣")
-            println("║ Не удалось распарсить ответ от Perplexity.                ║")
-            println("║ Ошибка: ${e.message?.take(44)?.padEnd(44)}║")
-            println("╠════════════════════════════════════════════════════════════╣")
-            println("║ Сырой ответ:                                              ║")
-            println("╠════════════════════════════════════════════════════════════╣")
-
-            // Выводим сырой ответ построчно
-            jsonContent.lines().forEach { line ->
-                if (line.length <= 58) {
-                    println("║ ${line.padEnd(58)} ║")
-                } else {
-                    // Если строка слишком длинная, разбиваем её
-                    line.chunked(58).forEach { chunk ->
-                        println("║ ${chunk.padEnd(58)} ║")
-                    }
-                }
-            }
-
-            println("╚════════════════════════════════════════════════════════════╝")
-            null
-        }
-    } catch (e: Exception) {
-        println("Ошибка получения новости: ${e.message}")
+        println("╚════════════════════════════════════════════════════════════╝")
         null
     } finally {
         client.close()
@@ -197,11 +131,6 @@ fun safeReadLine(): String {
     }
 }
 
-fun isPositiveAnswer(answer: String): Boolean {
-    val positive = listOf("да", "yes", "конечно", "давай", "хочу", "ага", "угу", "ок", "okay", "+", "д", "y")
-    return positive.any { answer.lowercase().trim().startsWith(it) }
-}
-
 fun getVisualWidth(text: String): Int {
     return text.codePoints().map { cp ->
         when {
@@ -215,23 +144,55 @@ fun getVisualWidth(text: String): Int {
 }
 
 fun wrapText(text: String, maxWidth: Int): List<String> {
-    val words = text.split(" ")
     val lines = mutableListOf<String>()
-    var currentLine = ""
 
-    for (word in words) {
-        if (currentLine.isEmpty()) {
-            currentLine = word
-        } else if (getVisualWidth(currentLine) + getVisualWidth(word) + 1 <= maxWidth) {
-            currentLine += " $word"
-        } else {
+    // Разбиваем текст на строки по символам новой строки
+    text.split("\n").forEach { line ->
+        if (line.isEmpty()) {
+            lines.add("")
+            return@forEach
+        }
+
+        val words = line.split(" ")
+        var currentLine = ""
+
+        for (word in words) {
+            if (currentLine.isEmpty()) {
+                currentLine = word
+            } else {
+                val testLine = "$currentLine $word"
+                if (getVisualWidth(testLine) <= maxWidth) {
+                    currentLine = testLine
+                } else {
+                    lines.add(currentLine)
+                    currentLine = word
+                }
+            }
+
+            // Если слово само по себе длиннее maxWidth, разбиваем его
+            if (getVisualWidth(currentLine) > maxWidth) {
+                var remaining = currentLine
+                while (getVisualWidth(remaining) > maxWidth) {
+                    var splitPoint = maxWidth
+                    while (splitPoint > 0 && getVisualWidth(remaining.substring(0, splitPoint)) > maxWidth) {
+                        splitPoint--
+                    }
+                    if (splitPoint > 0) {
+                        lines.add(remaining.substring(0, splitPoint))
+                        remaining = remaining.substring(splitPoint)
+                    } else {
+                        break
+                    }
+                }
+                currentLine = remaining
+            }
+        }
+
+        if (currentLine.isNotEmpty()) {
             lines.add(currentLine)
-            currentLine = word
         }
     }
-    if (currentLine.isNotEmpty()) {
-        lines.add(currentLine)
-    }
+
     return lines
 }
 
@@ -245,35 +206,74 @@ fun padEndVisual(text: String, targetWidth: Int): String {
     }
 }
 
-fun displayGoodNews(news: GoodNews) {
+fun cleanMarkdown(text: String): String {
+    return text.lines().joinToString("\n") { line ->
+        line
+            // Убираем жирный текст **text** -> text
+            .replace(Regex("""\*\*(.+?)\*\*"""), "$1")
+            // Убираем курсив *text* -> text
+            .replace(Regex("""\*(.+?)\*"""), "$1")
+            // Убираем заголовки ##
+            .replace(Regex("""^#{1,6}\s+"""), "")
+            // Убираем маркеры списков - в начале строки
+            .replace(Regex("""^-\s+"""), "• ")
+            // Убираем горизонтальные линии
+            .replace(Regex("""^---+$"""), "")
+            // Убираем ссылки [text](url) -> text
+            .replace(Regex("""\[(.+?)\]\(.+?\)"""), "$1")
+            // Убираем ссылки на источники [1], [2] и т.д.
+            .replace(Regex("""\[\d+\]"""), "")
+    }
+}
+
+fun displayMessage(role: String, content: String) {
     val boxWidth = 60
-    val contentWidth = boxWidth - 2 // Учитываем два пробела: после "║ " и перед " ║"
+    val contentWidth = boxWidth - 2
 
     println("\n╔${"═".repeat(boxWidth)}╗")
 
-    val header = "ХОРОШАЯ НОВОСТЬ?"
+    val header = if (role == "assistant") "🎲 AI Мастер" else "👤 Вы"
     val headerWidth = getVisualWidth(header)
     val headerPadding = (boxWidth - headerWidth) / 2
     println("║${" ".repeat(headerPadding)}$header${" ".repeat(boxWidth - headerWidth - headerPadding)}║")
 
     println("╠${"═".repeat(boxWidth)}╣")
 
-    // Заголовок
-    val titleLines = wrapText(news.title, contentWidth)
-    titleLines.forEach { line ->
+    // Очищаем markdown перед обработкой
+    val cleanContent = cleanMarkdown(content)
+    val contentLines = wrapText(cleanContent, contentWidth)
+
+    contentLines.forEach { line ->
+        println("║ ${padEndVisual(line, contentWidth)} ║")
+    }
+
+    println("╚${"═".repeat(boxWidth)}╝")
+}
+
+fun displayWelcome() {
+    val boxWidth = 60
+    val contentWidth = boxWidth - 2
+
+    println("\n╔${"═".repeat(boxWidth)}╗")
+
+    val header = "D&D CHARACTER CREATOR"
+    val headerWidth = getVisualWidth(header)
+    val headerPadding = (boxWidth - headerWidth) / 2
+    println("║${" ".repeat(headerPadding)}$header${" ".repeat(boxWidth - headerWidth - headerPadding)}║")
+
+    println("╠${"═".repeat(boxWidth)}╣")
+
+    val welcomeText = "Добро пожаловать в создание персонажа!"
+    val welcomeLines = wrapText(welcomeText, contentWidth)
+    welcomeLines.forEach { line ->
         println("║ ${padEndVisual(line, contentWidth)} ║")
     }
 
     println("║${" ".repeat(boxWidth)}║")
 
-    // Дата
-    println("║ ${padEndVisual(news.date, contentWidth)} ║")
-
-    println("║${" ".repeat(boxWidth)}║")
-
-    // Контент
-    val contentLines = wrapText(news.content, contentWidth)
-    contentLines.forEach { line ->
+    val instructionText = "Введите 'выход' или 'quit' чтобы завершить."
+    val instructionLines = wrapText(instructionText, contentWidth)
+    instructionLines.forEach { line ->
         println("║ ${padEndVisual(line, contentWidth)} ║")
     }
 
@@ -281,40 +281,64 @@ fun displayGoodNews(news: GoodNews) {
 }
 
 suspend fun main() {
+    displayWelcome()
 
+    // Инициализируем историю разговора с системным промптом
+    val conversationHistory = mutableListOf(
+        Message(role = "system", content = SYSTEM_PROMPT)
+    )
 
+    // Получаем первое сообщение от AI
+    println("Инициализация AI Мастера...\n")
 
-    val boxWidth = 60
-    val welcomeText = "Добро пожаловать в AI Chat Assistant!"
-    val welcomePadding = (boxWidth - welcomeText.length) / 2
+    // Добавляем пустое сообщение пользователя для начала диалога
+    conversationHistory.add(Message(role = "user", content = "Привет! Я хочу создать персонажа для D&D."))
 
-    println("╔${"═".repeat(boxWidth)}╗")
-    println("║${" ".repeat(welcomePadding)}$welcomeText${" ".repeat(boxWidth - welcomeText.length - welcomePadding)}║")
-    println("╚${"═".repeat(boxWidth)}╝\n")
-
-    print("Хотите услышать что-то хорошее? ")
-    val answer = safeReadLine().trim()
-
-    if (isPositiveAnswer(answer)) {
-        println("\nОтлично! Ищу хорошую новость...\n")
-        val news = getGoodNews()
-
-        if (news != null) {
-            displayGoodNews(news)
-        } else {
-            println("К сожалению, не удалось получить новость. Попробуйте еще раз.\n")
-        }
+    val firstResponse = chatWithAI(conversationHistory)
+    if (firstResponse != null) {
+        conversationHistory.add(Message(role = "assistant", content = firstResponse))
+        displayMessage("assistant", firstResponse)
     } else {
-        print("^_^ Тогда введите запрос: ")
-        val query = safeReadLine().trim()
+        println("Ошибка инициализации. Попробуйте перезапустить программу.")
+        return
+    }
 
-        if (query.isNotEmpty()) {
-            println("\nОбрабатываю запрос...\n")
-            val response = askPerplexity(query)
-            println("Ответ AI:")
-            println(response)
+    // Основной цикл чата
+    while (true) {
+        print("\n> ")
+        val userInput = safeReadLine().trim()
+
+        if (userInput.isEmpty()) {
+            println("⚠ Введите сообщение или 'выход' для завершения.")
+            continue
+        }
+
+        // Проверка на выход
+        if (userInput.lowercase() in listOf("выход", "quit", "exit", "q")) {
+            println("\n╔════════════════════════════════════════════════════════════╗")
+            println("║              Спасибо за использование!                     ║")
+            println("║           Удачи в ваших приключениях! 🎲                   ║")
+            println("╚════════════════════════════════════════════════════════════╝\n")
+            break
+        }
+
+        // Отображаем сообщение пользователя
+        displayMessage("user", userInput)
+
+        // Добавляем сообщение пользователя в историю
+        conversationHistory.add(Message(role = "user", content = userInput))
+
+        // Получаем ответ от AI
+        println("\n⏳ AI Мастер думает...")
+        val aiResponse = chatWithAI(conversationHistory)
+
+        if (aiResponse != null) {
+            // Добавляем ответ AI в историю
+            conversationHistory.add(Message(role = "assistant", content = aiResponse))
+            // Отображаем ответ
+            displayMessage("assistant", aiResponse)
         } else {
-            println("Запрос не может быть пустым!")
+            println("⚠ Не удалось получить ответ. Попробуйте еще раз.")
         }
     }
 }
