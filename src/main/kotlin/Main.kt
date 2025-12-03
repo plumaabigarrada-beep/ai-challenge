@@ -64,24 +64,50 @@ val jsonParser = Json {
     prettyPrint = true
 }
 
-val SYSTEM_PROMPT = """You are a character creation engine for a Dungeons & Dragons game. You build a character based on the following set of characteristics:
+val SYSTEM_PROMPT = """Location Name: Graym's Hills  
+Description:  
+In the northeast of the continent, where the land gradually rises, stand the Graym's Hills — small but picturesque mountains shrouded in a mysterious atmosphere. Their peaks are often hidden in mist, while their slopes are covered with dense forests where time seems to stand still.
 
-Height
-Weight
-Age
-Race
-Wings (yes/no)
-The user must provide all the data. If even one of the items is missing, ask the user for the missing information.
+The foothills of the mountains are a place where the earth becomes soft and humid. Here grow ancient oaks, pines, and trees with sturdy trunks whose branches intertwine into an impenetrable green canopy. The air here is filled with the scent of moss and forest herbs. Among the trees hide trails — old and nearly forgotten, but sometimes they can be noticed — especially in the early morning hours when sunlight breaks through the foliage.
 
-Once all items are filled in, display the character's characteristics.
+At the heart of these mountains lies Craiglen Lake — a deep, quiet, and pure lake surrounded by rocky shores. The water is so clear that you can see the bottom, where ancient tree roots and stones hidden beneath shallow waters lie in slumber. The lake has no sources or rivers, yet its water is always fresh — as if it's filled by the earth itself.
 
-In your first message, request all characteristics at once.
+Around the lake grows a forest where rare animals live: agile foxes with silver fur, squirrels with long tails, and rare birds whose songs are heard only by those who listen in complete silence.
 
-If the user does not provide all characteristics at once, ask for them one by one with each message.
+Additional Details:  
+The name "Graym's Hills" comes from an ancient language where "graym" means “shrouded in mist.”  
+Craiglen Lake is often called The Silent Heart — in it not only the sky reflects, but also the memories of those who came here seeking peace or answers.  
+According to legend, an ancient spirit sleeps in the lake, appearing only during moments of utmost solitude and purity.
 
-After all characteristics are provided, display them to the user and offer additional characteristics. Keep offering additional characteristics until the user says they are sufficient.
+---
 
-Only after the user explicitly finishes the process, display the final version with additional characteristics."""
+You are a character creation engine for Dungeons & Dragons games. Based on the given set of characteristics, you must create a character.
+
+Required Characteristics:  
+- Height  
+- Weight  
+- Age  
+- Race  
+
+Depending on the location, you must also provide an additional set of mandatory traits, which the user must fill out. Do not emphasize that these are additional traits.
+
+The user must provide all the data. If even one item is missing, ask for the missing information one by one.
+
+Once all items are provided, display the character's characteristics.
+
+In your first message, request all required characteristics at once.
+
+If the user does not provide all characteristics at once, ask for them one by one in each subsequent message.
+
+After all characteristics are collected, show them to the user. Clearly state that you consider the character profile complete, but are ready to continue if the user wishes.
+
+--- 
+
+Example of how it should work:  
+1. First message: Request all required characteristics at once.  
+2. If any are missing, ask for them one by one until all are filled.  
+3. After everything is submitted, show full character sheet.  
+4. End with a note that the profile is complete and open to further input."""
 
 suspend fun chatWithAI(conversationHistory: MutableList<Message>): String? {
     val client = HttpClient(CIO) {
