@@ -3,28 +3,56 @@ package org.example
 import kotlinx.coroutines.runBlocking
 
 fun main() = runBlocking {
-    // Enable raw mode for better terminal control
-    try {
-        val os = System.getProperty("os.name").lowercase()
-        if (os.contains("nix") || os.contains("nux") || os.contains("mac")) {
-            Runtime.getRuntime().exec(arrayOf("sh", "-c", "stty raw -echo < /dev/tty"))
+
+    val app = App()
+
+    println("Chat started! Type 'help' for available commands.\n")
+
+    while (true) {
+        print("You: ")
+        val userInput = readlnOrNull()?.trim() ?: break
+
+        if (userInput.isEmpty()) continue
+        if (Commands.exit.matches(userInput)) {
+            println("Goodbye!")
+            break
         }
-    } catch (e: Exception) {
-        // If we can't set raw mode, continue anyway
+
+        val response = handleCommands(userInput, app)
+
+        println(response)
     }
 
-    try {
-        val ui = TerminalUI()
-        ui.start()
-    } finally {
-        // Restore terminal
-        try {
-            val os = System.getProperty("os.name").lowercase()
-            if (os.contains("nix") || os.contains("nux") || os.contains("mac")) {
-                Runtime.getRuntime().exec(arrayOf("sh", "-c", "stty sane < /dev/tty"))
-            }
-        } catch (e: Exception) {
-            // Ignore
-        }
+    app.exit()
+}
+
+private suspend fun handleCommands(userInput: String, app: App): String = when {
+
+    Commands.help.matches(userInput) -> {
+        HELP_TEXT
+    }
+
+    Commands.temperature.matches(userInput) -> {
+        val temp = Commands.temperature.extractDoubleValue(userInput)
+        app.setTemperature(temp)
+    }
+
+    Commands.model.matches(userInput) -> {
+        val modelName = Commands.model.extractValue(userInput)
+        app.setModel(modelName)
+    }
+
+    Commands.systemPrompt.matches(userInput) -> {
+        val prompt = Commands.systemPrompt.extractValue(userInput)
+        app.setSystemPrompt(prompt)
+    }
+
+    Commands.clear.matches(userInput) -> {
+        app.clearHistory()
+    }
+
+    else -> {
+        val response = app.sendMessage(userInput)
+        "\nAssistant: $response\n"
     }
 }

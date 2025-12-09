@@ -46,8 +46,6 @@ val jsonParser = Json {
     prettyPrint = true
 }
 
-val SYSTEM_PROMPT = ""
-
 class PerplexityClient {
     private val client = HttpClient(CIO) {
         install(ContentNegotiation) {
@@ -55,11 +53,15 @@ class PerplexityClient {
         }
     }
 
-    suspend fun sendMessage(conversationHistory: List<Message>, temperature: Double = 0.7): String? {
+    suspend fun sendMessage(
+        conversationHistory: List<Message>,
+        temperature: Double = 0.7,
+        model: String = "sonar-pro",
+    ): String {
         val requestInfo = StringBuilder()
         return try {
             val request = PerplexityRequest(
-                model = "sonar-pro",
+                model = model,
                 messages = conversationHistory,
                 temperature = temperature
             )
@@ -82,11 +84,10 @@ class PerplexityClient {
             val responseBody = httpResponse.body<String>()
             requestInfo.append("\nResponse JSON:\n$responseBody\n")
 
-            println(requestInfo.toString())
 
             val response: PerplexityResponse = jsonParser.decodeFromString(responseBody)
 
-            response.choices.firstOrNull()?.message?.content
+            response.choices.firstOrNull()?.message?.content.orEmpty()
         } catch (e: kotlinx.serialization.SerializationException) {
             val errorMsg = buildString {
                 append(requestInfo)
@@ -95,7 +96,7 @@ class PerplexityClient {
                 append("\nThis usually means the API returned unexpected JSON format.\n")
                 append("Check the Response JSON above to see what was actually returned.\n")
             }
-            println(errorMsg)
+
             errorMsg
         } catch (e: io.ktor.client.plugins.ClientRequestException) {
             val responseBody = try { e.response.body<String>() } catch (ex: Exception) { "Unable to read response" }
@@ -106,7 +107,7 @@ class PerplexityClient {
                 append("Message: ${e.message}\n")
                 append("\nResponse Body:\n$responseBody\n")
             }
-            println(errorMsg)
+
             errorMsg
         } catch (e: io.ktor.client.plugins.ServerResponseException) {
             val responseBody = try { e.response.body<String>() } catch (ex: Exception) { "Unable to read response" }
@@ -117,7 +118,7 @@ class PerplexityClient {
                 append("Message: ${e.message}\n")
                 append("\nResponse Body:\n$responseBody\n")
             }
-            println(errorMsg)
+
             errorMsg
         } catch (e: Exception) {
             val errorMsg = buildString {
@@ -127,7 +128,6 @@ class PerplexityClient {
                 append("Message: ${e.message}\n")
                 append("\nStack Trace:\n${e.stackTraceToString()}\n")
             }
-            println(errorMsg)
             errorMsg
         }
     }
