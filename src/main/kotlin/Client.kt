@@ -3,10 +3,10 @@ package org.example
 interface Client {
 
     suspend fun sendMessage(
-        conversationHistory: List<Message>,
+        conversationHistory: List<CoreMessage>,
         temperature: Double,
         model: String,
-    ) : String
+    ) : CoreClientResponse
 
     fun models() : List<String>
 

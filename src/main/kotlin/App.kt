@@ -5,17 +5,17 @@ class App {
     private val config = Config()
     private val perplexityClient = PerplexityClient()
     private val huggingFaceClient = HuggingFaceClient()
-    private val conversationHistory = mutableListOf<Message>()
+    private val conversationHistory = mutableListOf<CoreMessage>()
 
 
     suspend fun sendMessage(text: String) : String {
 
-        conversationHistory.add(Message(role = "user", content = text))
+        conversationHistory.add(CoreMessage(role = "user", content = text))
 
         val history = if (config.systemPrompt.isEmpty()) {
             conversationHistory
         } else {
-            listOf(Message(role = "system", content = config.systemPrompt)) + conversationHistory
+            listOf(CoreMessage(role = "system", content = config.systemPrompt)) + conversationHistory
         }
 
         val client = when(config.clientType) {
@@ -29,13 +29,28 @@ class App {
             model = config.model
         )
 
-        if (response.isNotEmpty()) {
-            conversationHistory.add(Message(role = "assistant", content = response))
+        if (response.content.isNotEmpty()) {
+            // Update the last user message with prompt tokens
+            if (response.promptTokens != null && conversationHistory.isNotEmpty()) {
+                val lastIndex = conversationHistory.lastIndex
+                conversationHistory[lastIndex] = conversationHistory[lastIndex].copy(
+                    tokens = response.promptTokens
+                )
+            }
+
+            // Add assistant response with response tokens
+            conversationHistory.add(
+                CoreMessage(
+                    role = "assistant",
+                    content = response.content,
+                    tokens = response.responseTokens
+                )
+            )
         } else {
             conversationHistory.removeLastOrNull()
         }
 
-        return response
+        return response.content
     }
 
 
@@ -76,12 +91,13 @@ class App {
     fun clearHistory(): String {
         conversationHistory.clear()
         if (config.systemPrompt.isNotEmpty()) {
-            conversationHistory.add(Message(role = "system", content = config.systemPrompt))
+            conversationHistory.add(CoreMessage(role = "system", content = config.systemPrompt))
         }
         return "Conversation history cleared.\n"
     }
 
     fun getConfig(): String {
+        val totalTokens = conversationHistory.sumOf { it.tokens ?: 0 }
         return buildString {
             appendLine("Current Configuration:")
             appendLine("- Client: ${config.clientType.name.lowercase()}")
@@ -89,6 +105,7 @@ class App {
             appendLine("- Temperature: ${config.temperature}")
             appendLine("- System Prompt: ${config.systemPrompt.ifEmpty { "(not set)" }}")
             appendLine("- Conversation History: ${conversationHistory.size} messages")
+            appendLine("- Total Tokens Used: $totalTokens")
             appendLine()
         }
     }

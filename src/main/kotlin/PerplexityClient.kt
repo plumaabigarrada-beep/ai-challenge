@@ -20,22 +20,36 @@ data class Message(
 )
 
 @Serializable
+data class PerplexityMessage(
+    val role: String,
+    val content: String
+)
+
+@Serializable
 data class PerplexityRequest(
     val model: String,
-    val messages: List<Message>,
+    val messages: List<PerplexityMessage>,
     val temperature: Double? = null
 )
 
 @Serializable
 data class Choice(
-    val message: Message,
+    val message: PerplexityMessage,
     val index: Int? = null,
     val finish_reason: String? = null
 )
 
 @Serializable
+data class Usage(
+    val prompt_tokens: Int? = null,
+    val completion_tokens: Int? = null,
+    val total_tokens: Int? = null
+)
+
+@Serializable
 data class PerplexityResponse(
     val choices: List<Choice>,
+    val usage: Usage? = null,
     val id: String? = null,
     val model: String? = null,
     val created: Long? = null
@@ -54,20 +68,25 @@ class PerplexityClient : Client{
     }
 
     override suspend fun sendMessage(
-        conversationHistory: List<Message>,
+        conversationHistory: List<CoreMessage>,
         temperature: Double,
         model: String,
-    ): String {
+    ): CoreClientResponse {
         val requestInfo = StringBuilder()
         return try {
+            // Convert CoreMessage to PerplexityMessage
+            val messages = conversationHistory.map {
+                PerplexityMessage(role = it.role, content = it.content)
+            }
+
             val request = PerplexityRequest(
                 model = model,
-                messages = conversationHistory,
+                messages = messages,
                 temperature = temperature
             )
 
             requestInfo.append("=== REQUEST INFO ===\n")
-            requestInfo.append("Model: sonar-pro\n")
+            requestInfo.append("Model: $model\n")
             requestInfo.append("Temperature: $temperature\n")
             requestInfo.append("Messages: ${conversationHistory.size}\n")
             requestInfo.append("\nRequest JSON:\n${jsonParser.encodeToString(PerplexityRequest.serializer(), request)}\n")
@@ -84,10 +103,13 @@ class PerplexityClient : Client{
             val responseBody = httpResponse.body<String>()
             requestInfo.append("\nResponse JSON:\n$responseBody\n")
 
-
             val response: PerplexityResponse = jsonParser.decodeFromString(responseBody)
 
-            response.choices.firstOrNull()?.message?.content.orEmpty()
+            CoreClientResponse(
+                content = response.choices.firstOrNull()?.message?.content.orEmpty(),
+                promptTokens = response.usage?.prompt_tokens,
+                responseTokens = response.usage?.completion_tokens
+            )
         } catch (e: kotlinx.serialization.SerializationException) {
             val errorMsg = buildString {
                 append(requestInfo)
@@ -96,8 +118,7 @@ class PerplexityClient : Client{
                 append("\nThis usually means the API returned unexpected JSON format.\n")
                 append("Check the Response JSON above to see what was actually returned.\n")
             }
-
-            errorMsg
+            CoreClientResponse(content = errorMsg)
         } catch (e: io.ktor.client.plugins.ClientRequestException) {
             val responseBody = try { e.response.body<String>() } catch (ex: Exception) { "Unable to read response" }
             val errorMsg = buildString {
@@ -107,8 +128,7 @@ class PerplexityClient : Client{
                 append("Message: ${e.message}\n")
                 append("\nResponse Body:\n$responseBody\n")
             }
-
-            errorMsg
+            CoreClientResponse(content = errorMsg)
         } catch (e: io.ktor.client.plugins.ServerResponseException) {
             val responseBody = try { e.response.body<String>() } catch (ex: Exception) { "Unable to read response" }
             val errorMsg = buildString {
@@ -118,8 +138,7 @@ class PerplexityClient : Client{
                 append("Message: ${e.message}\n")
                 append("\nResponse Body:\n$responseBody\n")
             }
-
-            errorMsg
+            CoreClientResponse(content = errorMsg)
         } catch (e: Exception) {
             val errorMsg = buildString {
                 append(requestInfo)
@@ -128,7 +147,7 @@ class PerplexityClient : Client{
                 append("Message: ${e.message}\n")
                 append("\nStack Trace:\n${e.stackTraceToString()}\n")
             }
-            errorMsg
+            CoreClientResponse(content = errorMsg)
         }
     }
 

@@ -13,8 +13,14 @@ import kotlinx.serialization.json.*
 const val HF_API_URL = "https://router.huggingface.co/v1/chat/completions"
 
 @Serializable
+data class HFMessage(
+    val role: String,
+    val content: String
+)
+
+@Serializable
 data class HuggingFaceRequest(
-    val messages: List<Message>,
+    val messages: List<HFMessage>,
     val model: String,
     val stream: Boolean = false,
     val temperature: Double? = null
@@ -22,14 +28,22 @@ data class HuggingFaceRequest(
 
 @Serializable
 data class HFChoice(
-    val message: Message,
+    val message: HFMessage,
     val finish_reason: String? = null,
     val index: Int? = null
 )
 
 @Serializable
+data class HFUsage(
+    val prompt_tokens: Int? = null,
+    val completion_tokens: Int? = null,
+    val total_tokens: Int? = null
+)
+
+@Serializable
 data class HuggingFaceResponse(
     val choices: List<HFChoice>,
+    val usage: HFUsage? = null,
     val id: String? = null,
     val model: String? = null,
     val created: Long? = null
@@ -43,14 +57,19 @@ class HuggingFaceClient : Client {
     }
 
     override suspend fun sendMessage(
-        conversationHistory: List<Message>,
+        conversationHistory: List<CoreMessage>,
         temperature: Double,
         model: String,
-    ): String {
+    ): CoreClientResponse {
         val requestInfo = StringBuilder()
         return try {
+            // Convert CoreMessage to HFMessage
+            val messages = conversationHistory.map {
+                HFMessage(role = it.role, content = it.content)
+            }
+
             val request = HuggingFaceRequest(
-                messages = conversationHistory,
+                messages = messages,
                 model = model,
                 stream = false,
                 temperature = temperature
@@ -76,7 +95,11 @@ class HuggingFaceClient : Client {
 
             val response: HuggingFaceResponse = jsonParser.decodeFromString(responseBody)
 
-            response.choices.firstOrNull()?.message?.content.orEmpty()
+            CoreClientResponse(
+                content = response.choices.firstOrNull()?.message?.content.orEmpty(),
+                promptTokens = response.usage?.prompt_tokens,
+                responseTokens = response.usage?.completion_tokens
+            )
         } catch (e: kotlinx.serialization.SerializationException) {
             val errorMsg = buildString {
                 append(requestInfo)
@@ -85,7 +108,7 @@ class HuggingFaceClient : Client {
                 append("\nThis usually means the API returned unexpected JSON format.\n")
                 append("Check the Response JSON above to see what was actually returned.\n")
             }
-            errorMsg
+            CoreClientResponse(content = errorMsg)
         } catch (e: io.ktor.client.plugins.ClientRequestException) {
             val responseBody = try { e.response.body<String>() } catch (ex: Exception) { "Unable to read response" }
             val errorMsg = buildString {
@@ -95,7 +118,7 @@ class HuggingFaceClient : Client {
                 append("Message: ${e.message}\n")
                 append("\nResponse Body:\n$responseBody\n")
             }
-            errorMsg
+            CoreClientResponse(content = errorMsg)
         } catch (e: io.ktor.client.plugins.ServerResponseException) {
             val responseBody = try { e.response.body<String>() } catch (ex: Exception) { "Unable to read response" }
             val errorMsg = buildString {
@@ -105,7 +128,7 @@ class HuggingFaceClient : Client {
                 append("Message: ${e.message}\n")
                 append("\nResponse Body:\n$responseBody\n")
             }
-            errorMsg
+            CoreClientResponse(content = errorMsg)
         } catch (e: Exception) {
             val errorMsg = buildString {
                 append(requestInfo)
@@ -114,7 +137,7 @@ class HuggingFaceClient : Client {
                 append("Message: ${e.message}\n")
                 append("\nStack Trace:\n${e.stackTraceToString()}\n")
             }
-            errorMsg
+            CoreClientResponse(content = errorMsg)
         }
     }
 
