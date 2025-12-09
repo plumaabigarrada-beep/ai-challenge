@@ -4,6 +4,7 @@ import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
@@ -53,6 +54,11 @@ class HuggingFaceClient : Client {
     private val client = HttpClient(CIO) {
         install(ContentNegotiation) {
             json(jsonParser)
+        }
+        install(HttpTimeout) {
+            requestTimeoutMillis = 180_000 // 3 minutes
+            connectTimeoutMillis = 180_000
+            socketTimeoutMillis = 180_000
         }
     }
 
@@ -144,10 +150,8 @@ class HuggingFaceClient : Client {
     override fun models(): List<String> {
         return listOf(
             "MiniMaxAI/MiniMax-M2:novita",
-//            "allenai/Olmo-3-32B-Think:publicai",
             "deepseek-ai/DeepSeek-V3.2:novita",
             "Qwen/Qwen3-4B-Instruct-2507:nscale",
-//            "meta-llama/Llama-3.2-3B-Instruct:nscale",
 //            "Qwen/Qwen2.5-72B-Instruct:nscale",
 //            "meta-llama/Llama-3.3-70B-Instruct:nscale",
 //            "mistralai/Mixtral-8x7B-Instruct-v0.1:nscale",

@@ -6,15 +6,15 @@ fun main() = runBlocking {
 
     val app = App()
 
-    println("Chat started! Type 'help' for available commands.\n")
+    println("${Colors.INFO}Chat started! Type 'help' for available commands.${Colors.RESET}\n")
 
     while (true) {
-        print("You: ")
+        print("${Colors.USER}${Colors.BOLD}You:${Colors.RESET} ")
         val userInput = readlnOrNull()?.trim() ?: break
 
         if (userInput.isEmpty()) continue
         if (Commands.exit.matches(userInput)) {
-            println("Goodbye!")
+            println("${Colors.INFO}Goodbye!${Colors.RESET}")
             break
         }
 
@@ -70,6 +70,6 @@ private suspend fun handleCommands(userInput: String, app: App): String = when {
 
     else -> {
         val response = app.sendMessage(userInput)
-        "\nAssistant: $response\n"
+        "\n${Colors.ASSISTANT}${Colors.BOLD}Assistant:${Colors.RESET} ${Colors.ASSISTANT}$response${Colors.RESET}\n"
     }
 }
