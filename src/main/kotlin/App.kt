@@ -46,11 +46,25 @@ class App {
                     tokens = response.responseTokens
                 )
             )
+
+            // Build response with optional token information
+            return if (config.showTokens && (response.promptTokens != null || response.responseTokens != null)) {
+                buildString {
+                    append(response.content)
+                    append("\n\n[Tokens: ")
+                    if (response.promptTokens != null) append("prompt=${ response.promptTokens}")
+                    if (response.promptTokens != null && response.responseTokens != null) append(", ")
+                    if (response.responseTokens != null) append("response=${response.responseTokens}")
+                    val total = (response.promptTokens ?: 0) + (response.responseTokens ?: 0)
+                    append(", total=$total]")
+                }
+            } else {
+                response.content
+            }
         } else {
             conversationHistory.removeLastOrNull()
+            return ""
         }
-
-        return response.content
     }
 
 
@@ -104,10 +118,16 @@ class App {
             appendLine("- Model: ${config.model}")
             appendLine("- Temperature: ${config.temperature}")
             appendLine("- System Prompt: ${config.systemPrompt.ifEmpty { "(not set)" }}")
+            appendLine("- Show Tokens: ${if (config.showTokens) "enabled" else "disabled"}")
             appendLine("- Conversation History: ${conversationHistory.size} messages")
             appendLine("- Total Tokens Used: $totalTokens")
             appendLine()
         }
+    }
+
+    fun toggleShowTokens(): String {
+        config.showTokens = !config.showTokens
+        return "Show tokens ${if (config.showTokens) "enabled" else "disabled"}\n"
     }
 
     fun setClient(clientName: String?): String {

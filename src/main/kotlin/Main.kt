@@ -64,6 +64,10 @@ private suspend fun handleCommands(userInput: String, app: App): String = when {
         app.listModels()
     }
 
+    Commands.showTokens.matches(userInput) -> {
+        app.toggleShowTokens()
+    }
+
     else -> {
         val response = app.sendMessage(userInput)
         "\nAssistant: $response\n"

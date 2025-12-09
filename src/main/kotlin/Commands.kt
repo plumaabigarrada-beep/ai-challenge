@@ -10,6 +10,7 @@ object Commands {
     val config = Command(listOf("--config", "-c"))
     val client = Command(listOf("--client", "-cl"))
     val models = Command(listOf("--models", "-ls"))
+    val showTokens = Command(listOf("--showtokens", "-st"))
 }
 
 const val HELP_TEXT = """
@@ -20,6 +21,7 @@ Available commands:
 - --temperature <value>, -t <value>: Set temperature (0.0 to 1.0)
 - --model <name>, -m <name>: Set model name
 - --systemprompt <prompt>, -sp <prompt>: Set system prompt
+- --showtokens, -st: Toggle showing token counts after each message
 - --config, -c: Show current configuration
 - clear, reset: Clear conversation history
 - help: Show this help message
