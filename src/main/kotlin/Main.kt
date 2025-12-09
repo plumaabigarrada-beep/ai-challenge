@@ -51,6 +51,10 @@ private suspend fun handleCommands(userInput: String, app: App): String = when {
         app.clearHistory()
     }
 
+    Commands.config.matches(userInput) -> {
+        app.getConfig()
+    }
+
     else -> {
         val response = app.sendMessage(userInput)
         "\nAssistant: $response\n"

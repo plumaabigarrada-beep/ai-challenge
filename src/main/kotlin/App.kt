@@ -1,7 +1,5 @@
 package org.example
 
-import kotlinx.serialization.json.JsonNull.content
-
 class App {
 
     private val config = Config()
@@ -74,5 +72,16 @@ class App {
             conversationHistory.add(Message(role = "system", content = config.systemPrompt))
         }
         return "Conversation history cleared.\n"
+    }
+
+    fun getConfig(): String {
+        return buildString {
+            appendLine("Current Configuration:")
+            appendLine("- Model: ${config.model}")
+            appendLine("- Temperature: ${config.temperature}")
+            appendLine("- System Prompt: ${config.systemPrompt.ifEmpty { "(not set)" }}")
+            appendLine("- Conversation History: ${conversationHistory.size} messages")
+            appendLine()
+        }
     }
 }

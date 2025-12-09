@@ -7,6 +7,7 @@ object Commands {
     val model = Command(listOf("--model", "-m"))
     val clear = Command(listOf("clear", "reset"))
     val help = Command(listOf("help", "--help", "-h"))
+    val config = Command(listOf("--config", "-c"))
 }
 
 const val HELP_TEXT = """
@@ -15,6 +16,7 @@ Available commands:
 - --temperature <value>, -t <value>: Set temperature (0.0 to 1.0)
 - --model <name>, -m <name>: Set model name
 - --systemprompt <prompt>, -sp <prompt>: Set system prompt
+- --config, -c: Show current configuration
 - clear, reset: Clear conversation history
 - help: Show this help message
 
