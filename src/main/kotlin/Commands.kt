@@ -26,4 +26,9 @@ Available commands:
 - clear, reset: Clear conversation history
 - help: Show this help message
 
+Command Queue:
+- Use '&&' to chain multiple commands
+- Example: '--temperature 0.8 && --model sonar && What is 2+2?'
+- Commands execute sequentially from left to right
+
 """
