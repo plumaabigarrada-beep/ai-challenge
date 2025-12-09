@@ -1,11 +1,13 @@
 package org.example
 
+
 data class Command(
     val values: List<String>
 ) {
     fun matches(text: String): Boolean {
+        val command = text.trim().substringBefore(" ")
         return values.any { value ->
-            text.lowercase().startsWith(value.lowercase())
+            command.equals(value, ignoreCase = true)
         }
     }
 

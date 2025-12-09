@@ -8,45 +8,34 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.json.*
 
-const val API_URL = "https://api.perplexity.ai/chat/completions"
+const val HF_API_URL = "https://router.huggingface.co/v1/chat/completions"
 
 @Serializable
-data class Message(
-    val role: String,
-    val content: String
-)
-
-@Serializable
-data class PerplexityRequest(
-    val model: String,
+data class HuggingFaceRequest(
     val messages: List<Message>,
+    val model: String,
+    val stream: Boolean = false,
     val temperature: Double? = null
 )
 
 @Serializable
-data class Choice(
+data class HFChoice(
     val message: Message,
-    val index: Int? = null,
-    val finish_reason: String? = null
+    val finish_reason: String? = null,
+    val index: Int? = null
 )
 
 @Serializable
-data class PerplexityResponse(
-    val choices: List<Choice>,
+data class HuggingFaceResponse(
+    val choices: List<HFChoice>,
     val id: String? = null,
     val model: String? = null,
     val created: Long? = null
 )
 
-val jsonParser = Json {
-    ignoreUnknownKeys = true
-    prettyPrint = true
-}
-
-class PerplexityClient : Client{
+class HuggingFaceClient : Client {
     private val client = HttpClient(CIO) {
         install(ContentNegotiation) {
             json(jsonParser)
@@ -60,21 +49,22 @@ class PerplexityClient : Client{
     ): String {
         val requestInfo = StringBuilder()
         return try {
-            val request = PerplexityRequest(
-                model = model,
+            val request = HuggingFaceRequest(
                 messages = conversationHistory,
+                model = model,
+                stream = false,
                 temperature = temperature
             )
 
             requestInfo.append("=== REQUEST INFO ===\n")
-            requestInfo.append("Model: sonar-pro\n")
+            requestInfo.append("Model: $model\n")
             requestInfo.append("Temperature: $temperature\n")
             requestInfo.append("Messages: ${conversationHistory.size}\n")
-            requestInfo.append("\nRequest JSON:\n${jsonParser.encodeToString(PerplexityRequest.serializer(), request)}\n")
+            requestInfo.append("\nRequest JSON:\n${jsonParser.encodeToString(HuggingFaceRequest.serializer(), request)}\n")
 
-            val httpResponse = client.post(API_URL) {
+            val httpResponse = client.post(HF_API_URL) {
                 contentType(ContentType.Application.Json)
-                header("Authorization", "Bearer $API_KEY")
+                header("Authorization", "Bearer $HUGGINGFACE_API_KEY")
                 setBody(request)
             }
 
@@ -84,8 +74,7 @@ class PerplexityClient : Client{
             val responseBody = httpResponse.body<String>()
             requestInfo.append("\nResponse JSON:\n$responseBody\n")
 
-
-            val response: PerplexityResponse = jsonParser.decodeFromString(responseBody)
+            val response: HuggingFaceResponse = jsonParser.decodeFromString(responseBody)
 
             response.choices.firstOrNull()?.message?.content.orEmpty()
         } catch (e: kotlinx.serialization.SerializationException) {
@@ -96,7 +85,6 @@ class PerplexityClient : Client{
                 append("\nThis usually means the API returned unexpected JSON format.\n")
                 append("Check the Response JSON above to see what was actually returned.\n")
             }
-
             errorMsg
         } catch (e: io.ktor.client.plugins.ClientRequestException) {
             val responseBody = try { e.response.body<String>() } catch (ex: Exception) { "Unable to read response" }
@@ -107,7 +95,6 @@ class PerplexityClient : Client{
                 append("Message: ${e.message}\n")
                 append("\nResponse Body:\n$responseBody\n")
             }
-
             errorMsg
         } catch (e: io.ktor.client.plugins.ServerResponseException) {
             val responseBody = try { e.response.body<String>() } catch (ex: Exception) { "Unable to read response" }
@@ -118,7 +105,6 @@ class PerplexityClient : Client{
                 append("Message: ${e.message}\n")
                 append("\nResponse Body:\n$responseBody\n")
             }
-
             errorMsg
         } catch (e: Exception) {
             val errorMsg = buildString {
@@ -134,9 +120,13 @@ class PerplexityClient : Client{
 
     override fun models(): List<String> {
         return listOf(
-            "sonar-pro",
-            "sonar",
-            "sonar-reasoning"
+            "meta-llama/Llama-3.1-8B-Instruct:nscale",
+            "meta-llama/Llama-3.2-3B-Instruct:nscale",
+            "Qwen/Qwen2.5-72B-Instruct:nscale",
+            "meta-llama/Llama-3.3-70B-Instruct:nscale",
+            "mistralai/Mixtral-8x7B-Instruct-v0.1:nscale",
+            "mistralai/Mistral-7B-Instruct-v0.3:nscale",
+            "NousResearch/Hermes-3-Llama-3.1-8B:nscale"
         )
     }
 

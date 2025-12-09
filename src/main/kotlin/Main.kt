@@ -55,6 +55,15 @@ private suspend fun handleCommands(userInput: String, app: App): String = when {
         app.getConfig()
     }
 
+    Commands.client.matches(userInput) -> {
+        val clientName = Commands.client.extractValue(userInput)
+        app.setClient(clientName)
+    }
+
+    Commands.models.matches(userInput) -> {
+        app.listModels()
+    }
+
     else -> {
         val response = app.sendMessage(userInput)
         "\nAssistant: $response\n"
