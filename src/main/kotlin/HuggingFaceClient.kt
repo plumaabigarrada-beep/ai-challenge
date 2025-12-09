@@ -143,13 +143,16 @@ class HuggingFaceClient : Client {
 
     override fun models(): List<String> {
         return listOf(
-            "meta-llama/Llama-3.1-8B-Instruct:nscale",
-            "meta-llama/Llama-3.2-3B-Instruct:nscale",
-            "Qwen/Qwen2.5-72B-Instruct:nscale",
-            "meta-llama/Llama-3.3-70B-Instruct:nscale",
-            "mistralai/Mixtral-8x7B-Instruct-v0.1:nscale",
-            "mistralai/Mistral-7B-Instruct-v0.3:nscale",
-            "NousResearch/Hermes-3-Llama-3.1-8B:nscale"
+            "MiniMaxAI/MiniMax-M2:novita",
+//            "allenai/Olmo-3-32B-Think:publicai",
+            "deepseek-ai/DeepSeek-V3.2:novita",
+            "Qwen/Qwen3-4B-Instruct-2507:nscale",
+//            "meta-llama/Llama-3.2-3B-Instruct:nscale",
+//            "Qwen/Qwen2.5-72B-Instruct:nscale",
+//            "meta-llama/Llama-3.3-70B-Instruct:nscale",
+//            "mistralai/Mixtral-8x7B-Instruct-v0.1:nscale",
+//            "mistralai/Mistral-7B-Instruct-v0.3:nscale",
+//            "NousResearch/Hermes-3-Llama-3.1-8B:nscale"
         )
     }
 

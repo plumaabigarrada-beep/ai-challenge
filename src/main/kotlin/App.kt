@@ -18,16 +18,16 @@ class App {
             listOf(CoreMessage(role = "system", content = config.systemPrompt)) + conversationHistory
         }
 
-        val client = when(config.clientType) {
-            ClientType.PERPLEXITY -> perplexityClient
-            ClientType.HUGGINGFACE -> huggingFaceClient
-        }
+        val client = client()
 
+        // Measure response time
+        val startTime = System.currentTimeMillis()
         val response = client.sendMessage(
             conversationHistory = history,
             temperature = config.temperature,
             model = config.model
         )
+        val duration = System.currentTimeMillis() - startTime
 
         if (response.content.isNotEmpty()) {
             // Update the last user message with prompt tokens
@@ -38,25 +38,42 @@ class App {
                 )
             }
 
-            // Add assistant response with response tokens
+            // Add assistant response with response tokens and duration
             conversationHistory.add(
                 CoreMessage(
                     role = "assistant",
                     content = response.content,
-                    tokens = response.responseTokens
+                    tokens = response.responseTokens,
+                    durationMs = duration
                 )
             )
 
-            // Build response with optional token information
-            return if (config.showTokens && (response.promptTokens != null || response.responseTokens != null)) {
+            // Build response with optional token and time information
+            return if (config.showTokens) {
                 buildString {
                     append(response.content)
-                    append("\n\n[Tokens: ")
-                    if (response.promptTokens != null) append("prompt=${ response.promptTokens}")
-                    if (response.promptTokens != null && response.responseTokens != null) append(", ")
-                    if (response.responseTokens != null) append("response=${response.responseTokens}")
-                    val total = (response.promptTokens ?: 0) + (response.responseTokens ?: 0)
-                    append(", total=$total]")
+                    append("\n\n[")
+
+                    // Add token information if available
+                    if (response.promptTokens != null || response.responseTokens != null) {
+                        append("Tokens: ")
+                        if (response.promptTokens != null) append("prompt=${response.promptTokens}")
+                        if (response.promptTokens != null && response.responseTokens != null) append(", ")
+                        if (response.responseTokens != null) append("response=${response.responseTokens}")
+                        val total = (response.promptTokens ?: 0) + (response.responseTokens ?: 0)
+                        append(", total=$total")
+                        append(" | ")
+                    }
+
+                    // Add time information
+                    append("Time: ")
+                    if (duration < 1000) {
+                        append("${duration}ms")
+                    } else {
+                        val seconds = duration / 1000.0
+                        append(String.format("%.2fs", seconds))
+                    }
+                    append("]")
                 }
             } else {
                 response.content
@@ -112,6 +129,12 @@ class App {
 
     fun getConfig(): String {
         val totalTokens = conversationHistory.sumOf { it.tokens ?: 0 }
+        val responsesWithDuration = conversationHistory.filter { it.role == "assistant" && it.durationMs != null }
+        val totalDuration = responsesWithDuration.sumOf { it.durationMs ?: 0 }
+        val avgDuration = if (responsesWithDuration.isNotEmpty()) {
+            totalDuration / responsesWithDuration.size
+        } else 0
+
         return buildString {
             appendLine("Current Configuration:")
             appendLine("- Client: ${config.clientType.name.lowercase()}")
@@ -121,6 +144,10 @@ class App {
             appendLine("- Show Tokens: ${if (config.showTokens) "enabled" else "disabled"}")
             appendLine("- Conversation History: ${conversationHistory.size} messages")
             appendLine("- Total Tokens Used: $totalTokens")
+            if (responsesWithDuration.isNotEmpty()) {
+                appendLine("- Average Response Time: ${String.format("%.2fs", avgDuration / 1000.0)}")
+                appendLine("- Total Response Time: ${String.format("%.2fs", totalDuration / 1000.0)}")
+            }
             appendLine()
         }
     }
@@ -146,19 +173,13 @@ class App {
         config.clientType = newClientType
 
         // Update default model based on client
-        config.model = when (newClientType) {
-            ClientType.PERPLEXITY -> "sonar-pro"
-            ClientType.HUGGINGFACE -> "meta-llama/Llama-3.1-8B-Instruct:nscale"
-        }
+        config.model = client().models().first()
 
         return "Client switched to ${newClientType.name.lowercase()}. Model set to ${config.model}\n"
     }
 
     fun listModels(): String {
-        val client = when (config.clientType) {
-            ClientType.PERPLEXITY -> perplexityClient
-            ClientType.HUGGINGFACE -> huggingFaceClient
-        }
+        val client = client()
 
         return buildString {
             appendLine("Available models for ${config.clientType.name.lowercase()}:")
@@ -167,5 +188,10 @@ class App {
             }
             appendLine()
         }
+    }
+
+    private fun client(): Client = when (config.clientType) {
+        ClientType.PERPLEXITY -> perplexityClient
+        ClientType.HUGGINGFACE -> huggingFaceClient
     }
 }
