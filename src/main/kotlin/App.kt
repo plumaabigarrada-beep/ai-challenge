@@ -5,6 +5,7 @@ class App {
     private val config = Config()
     private val perplexityClient = PerplexityClient()
     private val huggingFaceClient = HuggingFaceClient()
+    private val lmStudioClient = LMStudioClient()
     private val conversationHistory = mutableListOf<CoreMessage>()
 
 
@@ -88,6 +89,7 @@ class App {
     fun exit() {
         perplexityClient.close()
         huggingFaceClient.close()
+        lmStudioClient.close()
     }
 
     fun setTemperature(temperature: Double?) : String {
@@ -211,14 +213,15 @@ class App {
 
     fun setClient(clientName: String?): String {
         if (clientName.isNullOrEmpty()) {
-            return "Please provide a client name (perplexity or huggingface)\n"
+            return "Please provide a client name (perplexity, huggingface, or lmstudio)\n"
         }
 
         val newClientType = when (clientName.lowercase()) {
             "perplexity", "pplx" -> ClientType.PERPLEXITY
             "huggingface", "hf" -> ClientType.HUGGINGFACE
+            "lmstudio", "lm" -> ClientType.LMSTUDIO
             else -> {
-                return "Unknown client: $clientName. Available: perplexity, huggingface\n"
+                return "Unknown client: $clientName. Available: perplexity, huggingface, lmstudio\n"
             }
         }
 
@@ -245,5 +248,6 @@ class App {
     private fun client(): Client = when (config.clientType) {
         ClientType.PERPLEXITY -> perplexityClient
         ClientType.HUGGINGFACE -> huggingFaceClient
+        ClientType.LMSTUDIO -> lmStudioClient
     }
 }

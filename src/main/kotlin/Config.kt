@@ -2,13 +2,14 @@ package org.example
 
 enum class ClientType {
     PERPLEXITY,
-    HUGGINGFACE
+    HUGGINGFACE,
+    LMSTUDIO
 }
 
 data class Config(
-    var model: String = "sonar-pro",
+    var model: String = "qwen/qwen2.5-coder-14b",
     var temperature: Double = 0.7,
     var systemPrompt: String = "",
-    var clientType: ClientType = ClientType.PERPLEXITY,
+    var clientType: ClientType = ClientType.LMSTUDIO,
     var showTokens: Boolean = true
 )

@@ -11,12 +11,13 @@ ai-challenge/
 ├── src/
 │   ├── main/kotlin/
 │   │   ├── Main.kt                 # Entry point with CLI loop (97 lines)
-│   │   ├── App.kt                  # Core application logic (249 lines)
+│   │   ├── App.kt                  # Core application logic (253 lines)
 │   │   ├── handleCommands.kt       # Command handler routing logic (57 lines)
 │   │   ├── Client.kt               # Client interface (12 lines)
 │   │   ├── PerplexityClient.kt     # Perplexity API implementation (171 lines)
 │   │   ├── HuggingFaceClient.kt    # HuggingFace API implementation (166 lines)
-│   │   ├── Config.kt               # Configuration data class (13 lines)
+│   │   ├── LMStudioClient.kt       # LM Studio local API implementation (168 lines)
+│   │   ├── Config.kt               # Configuration data class (14 lines)
 │   │   ├── Commands.kt             # Command definitions (36 lines)
 │   │   ├── Command.kt              # Command parsing logic (25 lines)
 │   │   ├── CoreMessage.kt          # Message data model (7 lines)
@@ -50,9 +51,10 @@ ai-challenge/
 ## Core Features
 
 ### 1. Multi-Client Support
-Switch between two AI providers:
+Switch between three AI providers:
 - **Perplexity**: Models include sonar-pro, sonar, sonar-reasoning
 - **HuggingFace Router**: Supports MiniMax, DeepSeek, Qwen models
+- **LM Studio**: Local model runtime with OpenAI-compatible API (localhost:1234)
 
 ### 2. Conversation Management
 - Maintains conversation history with role tracking (user, assistant, system)
@@ -127,6 +129,13 @@ HuggingFace API wrapper:
 - Similar error handling and token tracking
 - Bearer token authentication
 
+#### LMStudioClient.kt
+LM Studio local API wrapper:
+- POST requests to `http://localhost:1234/v1/chat/completions`
+- OpenAI-compatible API for locally running models
+- No authentication required (local server)
+- Comprehensive error handling with connection guidance
+
 #### Main.kt
 Entry point that provides:
 - REPL-style command loop
@@ -197,4 +206,4 @@ Git commits show progressive development:
 - `init`: Initial commit
 - Day 2, 3, 6 challenges: Feature additions
 - Day 7 challenge: File reading command
-- Recent enhancements: tokens showing, time measuring, colors, commands queue, file reading
+- Recent enhancements: tokens showing, time measuring, colors, commands queue, file reading, LM Studio client support
