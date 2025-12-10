@@ -35,7 +35,7 @@ fun main() = runBlocking {
 
             // Add spacing between commands if there are multiple
             if (commandQueue.size > 1 && index < commandQueue.size - 1) {
-                println("${Colors.INFO}---${Colors.RESET}")
+                println("${Colors.INFO}$command${Colors.RESET}")
             }
         }
     }
