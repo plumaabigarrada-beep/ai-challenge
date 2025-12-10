@@ -11,6 +11,7 @@ object Commands {
     val client = Command(listOf("--client", "-cl"))
     val models = Command(listOf("--models", "-ls"))
     val showTokens = Command(listOf("--showtokens", "-st"))
+    val file = Command(listOf("--file", "-f"))
 }
 
 const val HELP_TEXT = """
@@ -23,6 +24,7 @@ Available commands:
 - --systemprompt <prompt>, -sp <prompt>: Set system prompt
 - --showtokens, -st: Toggle showing token counts after each message
 - --config, -c: Show current configuration
+- --file <path>, -f <path>: Read file content and send to AI
 - clear, reset: Clear conversation history
 - help: Show this help message
 

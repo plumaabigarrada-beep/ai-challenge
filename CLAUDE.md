@@ -10,13 +10,13 @@ This is a Kotlin-based command-line chatbot application that provides an interac
 ai-challenge/
 ├── src/
 │   ├── main/kotlin/
-│   │   ├── Main.kt                 # Entry point with CLI loop (92 lines)
-│   │   ├── App.kt                  # Core application logic (196 lines)
+│   │   ├── Main.kt                 # Entry point with CLI loop (97 lines)
+│   │   ├── App.kt                  # Core application logic (249 lines)
 │   │   ├── Client.kt               # Client interface (12 lines)
 │   │   ├── PerplexityClient.kt     # Perplexity API implementation (171 lines)
 │   │   ├── HuggingFaceClient.kt    # HuggingFace API implementation (166 lines)
 │   │   ├── Config.kt               # Configuration data class (13 lines)
-│   │   ├── Commands.kt             # Command definitions (33 lines)
+│   │   ├── Commands.kt             # Command definitions (36 lines)
 │   │   ├── Command.kt              # Command parsing logic (25 lines)
 │   │   ├── CoreMessage.kt          # Message data model (7 lines)
 │   │   ├── CoreClientResponse.kt   # API response data model (6 lines)
@@ -69,7 +69,14 @@ Switch between two AI providers:
 - Response time measurement (in ms or seconds)
 - Statistics display (total tokens, average/total response times)
 
-### 5. Command System
+### 5. File Reading
+- Read text files from disk and send content to AI
+- Support for any text-based file format (.txt, .md, .kt, .json, etc.)
+- Preview display (first 200 characters) before sending
+- Comprehensive error handling (file not found, permissions, etc.)
+- File content integrated into conversation history
+
+### 6. Command System
 - Command queue using && separator for chaining commands
 - Built-in commands for configuration and management
 - Help system with available commands listing
@@ -86,6 +93,7 @@ Switch between two AI providers:
 | `--systemprompt <prompt>` | `-sp` | Set system prompt |
 | `--showtokens` | `-st` | Toggle token display |
 | `--config` | `-c` | Show current configuration |
+| `--file <path>` | `-f` | Read file content and send to AI |
 | `clear`, `reset` | - | Clear conversation history |
 | `help` | - | Display help information |
 
@@ -104,6 +112,7 @@ Central business logic that:
 - Handles message sending and response formatting
 - Manages configuration and client switching
 - Compiles metrics (tokens, response times)
+- Reads and processes text files from disk
 
 #### PerplexityClient.kt
 Perplexity API wrapper:
@@ -164,9 +173,19 @@ Both clients include comprehensive try-catch blocks for:
 - Sequential execution from left to right
 - Allows configuration changes followed by queries in one line
 
+### File Reading
+- Uses `java.io.File` API for file operations
+- UTF-8 encoding by default (Kotlin's `readText()`)
+- Validates: path provided, file exists, is a file (not directory), has read permissions
+- Shows 200-character preview before sending to AI
+- Full file content sent to AI and added to conversation history
+- Error handling: file not found, permission denied, IO exceptions
+- Example: `--file report.txt` or `-f code.kt && review this`
+
 ## Development History
 
 Git commits show progressive development:
 - `init`: Initial commit
 - Day 2, 3, 6 challenges: Feature additions
-- Recent enhancements: tokens showing, time measuring, colors, commands queue
+- Day 7 challenge: File reading command
+- Recent enhancements: tokens showing, time measuring, colors, commands queue, file reading

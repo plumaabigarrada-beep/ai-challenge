@@ -85,6 +85,11 @@ private suspend fun handleCommands(userInput: String, app: App): String = when {
         app.toggleShowTokens()
     }
 
+    Commands.file.matches(userInput) -> {
+        val filePath = Commands.file.extractValue(userInput)
+        app.readAndSendFile(filePath)
+    }
+
     else -> {
         val response = app.sendMessage(userInput)
         "\n${Colors.ASSISTANT}${Colors.BOLD}Assistant:${Colors.RESET} ${Colors.ASSISTANT}$response${Colors.RESET}\n"
