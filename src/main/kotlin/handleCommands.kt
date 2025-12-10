@@ -50,6 +50,30 @@ suspend fun handleCommands(userInput: String, app: App): String = when {
         app.readAndSendFile(filePath)
     }
 
+    Commands.createChat.matches(userInput) -> {
+        val name = Commands.createChat.extractValue(userInput)
+        app.createChat(name)
+    }
+
+    Commands.deleteChat.matches(userInput) -> {
+        val chatId = Commands.deleteChat.extractValue(userInput)
+        app.deleteChat(chatId)
+    }
+
+    Commands.switchChat.matches(userInput) -> {
+        val chatId = Commands.switchChat.extractValue(userInput)
+        app.switchChat(chatId)
+    }
+
+    Commands.listChats.matches(userInput) -> {
+        app.listChats()
+    }
+
+    Commands.renameChat.matches(userInput) -> {
+        val name = Commands.renameChat.extractValue(userInput)
+        app.renameChat(name)
+    }
+
     else -> {
         val response = app.sendMessage(userInput)
         "\n${Colors.ASSISTANT}${Colors.BOLD}Assistant:${Colors.RESET} ${Colors.ASSISTANT}$response${Colors.RESET}\n"

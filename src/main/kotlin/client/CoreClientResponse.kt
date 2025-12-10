@@ -1,4 +1,4 @@
-package org.example
+package client
 
 data class CoreClientResponse(
     val content: String,

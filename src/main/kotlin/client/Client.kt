@@ -1,4 +1,6 @@
-package org.example
+package client
+
+import org.example.CoreMessage
 
 interface Client {
 

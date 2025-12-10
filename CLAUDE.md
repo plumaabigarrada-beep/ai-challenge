@@ -10,25 +10,31 @@ This is a Kotlin-based command-line chatbot application that provides an interac
 ai-challenge/
 ├── src/
 │   ├── main/kotlin/
-│   │   ├── Main.kt                 # Entry point with CLI loop (97 lines)
-│   │   ├── App.kt                  # Core application logic (253 lines)
-│   │   ├── handleCommands.kt       # Command handler routing logic (57 lines)
-│   │   ├── Client.kt               # Client interface (12 lines)
-│   │   ├── PerplexityClient.kt     # Perplexity API implementation (171 lines)
-│   │   ├── HuggingFaceClient.kt    # HuggingFace API implementation (166 lines)
-│   │   ├── LMStudioClient.kt       # LM Studio local API implementation (168 lines)
-│   │   ├── Config.kt               # Configuration data class (14 lines)
-│   │   ├── Commands.kt             # Command definitions (36 lines)
-│   │   ├── Command.kt              # Command parsing logic (25 lines)
-│   │   ├── CoreMessage.kt          # Message data model (7 lines)
-│   │   ├── CoreClientResponse.kt   # API response data model (6 lines)
-│   │   ├── Colors.kt               # Terminal color codes (10 lines)
-│   │   └── ApiKeys.kt              # API credentials (3 lines)
+│   │   ├── Main.kt                         # Entry point with CLI loop
+│   │   ├── App.kt                          # Multi-chat manager and app orchestrator
+│   │   ├── handleCommands.kt               # Command handler routing logic
+│   │   ├── Commands.kt                     # Command definitions and help text
+│   │   ├── Command.kt                      # Command parsing logic
+│   │   ├── Config.kt                       # Configuration data class
+│   │   ├── CoreMessage.kt                  # Message data model
+│   │   ├── Colors.kt                       # Terminal color codes
+│   │   ├── ApiKeys.kt                      # API credentials
+│   │   ├── ErrorHandler.kt                 # Shared error message formatting
+│   │   ├── client/
+│   │   │   ├── Client.kt                   # Client interface
+│   │   │   ├── CoreClientResponse.kt       # API response data model
+│   │   │   ├── ChatCompletionModels.kt     # Shared OpenAI-compatible models
+│   │   │   └── impl/
+│   │   │       ├── PerplexityClient.kt     # Perplexity API implementation
+│   │   │       ├── HuggingFaceClient.kt    # HuggingFace API implementation
+│   │   │       └── LMStudioClient.kt       # LM Studio local API implementation
+│   │   └── chat/
+│   │       └── Chat.kt                     # Individual chat logic and state
 │   └── test/kotlin/
-│       └── CommandTest.kt          # Unit tests for command parsing
-├── build.gradle.kts                # Gradle build configuration
-├── settings.gradle.kts             # Root project settings
-└── gradle/                         # Gradle wrapper files
+│       └── CommandTest.kt                  # Unit tests for command parsing
+├── build.gradle.kts                        # Gradle build configuration
+├── settings.gradle.kts                     # Root project settings
+└── gradle/                                 # Gradle wrapper files
 ```
 
 ## Technologies and Dependencies
@@ -50,102 +56,178 @@ ai-challenge/
 
 ## Core Features
 
-### 1. Multi-Client Support
+### 1. Multi-Chat Support
+- Create and manage unlimited independent chat sessions
+- Each chat maintains its own conversation history and statistics
+- Switch between chats seamlessly with partial ID matching
+- Rename chats for better organization
+- Delete chats (with safety - cannot delete last chat)
+- List all chats with stats (message count, token usage)
+
+### 2. Multi-Client Support
 Switch between three AI providers:
 - **Perplexity**: Models include sonar-pro, sonar, sonar-reasoning
 - **HuggingFace Router**: Supports MiniMax, DeepSeek, Qwen models
 - **LM Studio**: Local model runtime with OpenAI-compatible API (localhost:1234)
 
-### 2. Conversation Management
+### 3. Conversation Management
 - Maintains conversation history with role tracking (user, assistant, system)
 - Clear/reset functionality for conversation history
 - System prompt support for customizing AI behavior
+- Independent conversation history per chat
 
-### 3. Configuration Options
+### 4. Configuration Options
 - Temperature setting (0.0 to <2.0) for response randomness
 - Model selection per client
 - System prompt customization
 - Token display toggle
+- Shared configuration across all chats
 
-### 4. Metrics and Analytics
+### 5. Metrics and Analytics
 - Token consumption tracking (prompt, response, total)
 - Response time measurement (in ms or seconds)
-- Statistics display (total tokens, average/total response times)
+- Statistics display per chat (total tokens, average/total response times)
+- Conversation history tracking per chat
 
-### 5. File Reading
+### 6. File Reading
 - Read text files from disk and send content to AI
 - Support for any text-based file format (.txt, .md, .kt, .json, etc.)
 - Preview display (first 200 characters) before sending
 - Comprehensive error handling (file not found, permissions, etc.)
 - File content integrated into conversation history
 
-### 6. Command System
+### 7. Command System
 - Command queue using && separator for chaining commands
 - Built-in commands for configuration and management
-- Help system with available commands listing
+- Chat management commands (create, delete, switch, list, rename)
+- Help system with categorized commands listing
 
 ## Available Commands
 
+### Configuration Commands
+| Command | Alias | Description |
+|---------|-------|-------------|
+| `--client <name>` | `-cl` | Switch AI provider (perplexity/huggingface/lmstudio) |
+| `--models` | `-ls` | List available models for current client |
+| `--temperature <value>` | `-t` | Set temperature (0.0 to <2.0) |
+| `--model <name>` | `-m` | Set model name |
+| `--systemprompt <prompt>` | `-sp` | Set system prompt |
+| `--showtokens` | `-st` | Toggle token display |
+| `--config` | `-c` | Show current configuration and stats |
+
+### Chat Management Commands
+| Command | Alias | Description |
+|---------|-------|-------------|
+| `--newchat [name]` | `-nc` | Create new chat (optionally with name) |
+| `--deletechat <id>` | `-dc` | Delete chat by ID (supports partial ID) |
+| `--switchchat <id>` | `-sc` | Switch to chat by ID (supports partial ID) |
+| `--chats` | `-lc` | List all chats with stats |
+| `--renamechat <name>` | `-rc` | Rename current chat |
+| `clear`, `reset` | - | Clear current chat's conversation history |
+
+### File Operations
+| Command | Alias | Description |
+|---------|-------|-------------|
+| `--file <path>` | `-f` | Read file content and send to AI |
+
+### Other Commands
 | Command | Alias | Description |
 |---------|-------|-------------|
 | `--exit`, `--quit` | - | Exit application |
-| `--client <name>` | `-cl` | Switch AI provider |
-| `--models` | `-ls` | List available models |
-| `--temperature <value>` | `-t` | Set temperature |
-| `--model <name>` | `-m` | Set model |
-| `--systemprompt <prompt>` | `-sp` | Set system prompt |
-| `--showtokens` | `-st` | Toggle token display |
-| `--config` | `-c` | Show current configuration |
-| `--file <path>` | `-f` | Read file content and send to AI |
-| `clear`, `reset` | - | Clear conversation history |
-| `help` | - | Display help information |
+| `help`, `--help` | `-h` | Display help information |
 
 ## Architecture
 
-### Design Pattern
+### Design Patterns
+- **Multi-Chat Architecture**: Multiple independent chat sessions with shared configuration
 - **Client-Server**: CLI communicates with remote AI APIs
 - **Interface-based Design**: `Client` interface allows multiple implementations
-- **Data Class Models**: Separate data classes for API-specific message formats
+- **Shared Models**: OpenAI-compatible API models shared across all clients
+- **Separation of Concerns**: Chat logic, client implementations, and app orchestration separated
+
+### Package Structure
+
+#### `client/` Package
+Contains all client-related code:
+- **Client.kt**: Interface defining client contract (`sendMessage`, `models`)
+- **CoreClientResponse.kt**: Standardized response model
+- **ChatCompletionModels.kt**: Shared OpenAI-compatible models (ChatMessage, ChatCompletionRequest, ChatCompletionResponse, ChatUsage, ChatChoice)
+- **impl/**: Client implementations (PerplexityClient, HuggingFaceClient, LMStudioClient)
+
+#### `chat/` Package
+Contains chat session logic:
+- **Chat.kt**: Individual chat session with conversation history, message handling, and statistics
 
 ### Key Components
 
 #### App.kt
-Central business logic that:
-- Manages conversation history
-- Handles message sending and response formatting
-- Manages configuration and client switching
-- Compiles metrics (tokens, response times)
+Multi-chat manager and application orchestrator:
+- Manages multiple chat sessions (create, delete, switch, list, rename)
+- Maintains map of chats with current chat tracking
+- Coordinates client instances across all chats
+- Handles configuration management
+- Implements partial ID matching for user convenience
+- Delegates message sending to current chat
 - Reads and processes text files from disk
 
-#### PerplexityClient.kt
+#### Chat.kt (chat/Chat.kt)
+Individual chat session logic:
+- Unique ID (UUID) and customizable name
+- Independent conversation history (CoreMessage list)
+- Message sending with token and timing tracking
+- Statistics calculation (ChatStats: message count, tokens, response times)
+- Response formatting with optional token display
+- Clear history functionality
+- References shared client map and config
+
+#### ChatCompletionModels.kt (client/ChatCompletionModels.kt)
+Shared OpenAI-compatible API models:
+- **ChatMessage**: role + content
+- **ChatCompletionRequest**: model, messages, temperature, stream
+- **ChatCompletionResponse**: choices, usage, id, model, created
+- **ChatChoice**: message, index, finish_reason
+- **ChatUsage**: prompt_tokens, completion_tokens, total_tokens
+- **jsonParser**: Shared JSON configuration (ignoreUnknownKeys, prettyPrint)
+
+#### ErrorHandler.kt
+Centralized error handling:
+- Shared `errorMessage()` function for all clients
+- Handles SerializationException, ClientRequestException, ServerResponseException
+- Supports optional additional notes (e.g., LM Studio connection guidance)
+- Formatted error messages with request info and stack traces
+
+#### PerplexityClient.kt (client/impl/)
 Perplexity API wrapper:
 - POST requests to `https://api.perplexity.ai/chat/completions`
-- Comprehensive error handling (serialization, HTTP 4xx/5xx errors)
+- Uses shared ChatCompletionModels
+- Shared error handling via ErrorHandler
 - Token counting from API response
 
-#### HuggingFaceClient.kt
+#### HuggingFaceClient.kt (client/impl/)
 HuggingFace API wrapper:
 - POST requests to `https://router.huggingface.co/v1/chat/completions`
-- Similar error handling and token tracking
+- Uses shared ChatCompletionModels
+- Shared error handling via ErrorHandler
 - Bearer token authentication
 
-#### LMStudioClient.kt
+#### LMStudioClient.kt (client/impl/)
 LM Studio local API wrapper:
 - POST requests to `http://localhost:1234/v1/chat/completions`
-- OpenAI-compatible API for locally running models
+- Uses shared ChatCompletionModels
+- Shared error handling with custom connection note
 - No authentication required (local server)
-- Comprehensive error handling with connection guidance
 
 #### Main.kt
 Entry point that provides:
 - REPL-style command loop
 - Input parsing and command queue processing
 - Colored terminal output for UX
+- App lifecycle management
 
 #### handleCommands.kt
 Command routing function that:
 - Matches user input against defined commands
-- Extracts command parameters (temperature, model, file paths, etc.)
+- Extracts command parameters (temperature, model, file paths, chat IDs, etc.)
 - Routes commands to appropriate App methods
 - Handles chat messages when no command matches
 - Returns formatted responses for display

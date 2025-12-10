@@ -1,88 +1,34 @@
 package org.example
 
+import chat.Chat
+import client.Client
+
 class App {
 
     private val config = Config()
     private val perplexityClient = PerplexityClient()
     private val huggingFaceClient = HuggingFaceClient()
     private val lmStudioClient = LMStudioClient()
-    private val conversationHistory = mutableListOf<CoreMessage>()
+
+    private val clients = mapOf(
+        ClientType.PERPLEXITY to perplexityClient,
+        ClientType.HUGGINGFACE to huggingFaceClient,
+        ClientType.LMSTUDIO to lmStudioClient
+    )
+
+    private val chats = mutableMapOf<String, Chat>()
+    private var currentChatId: String
+
+    init {
+        // Create initial default chat
+        val defaultChat = Chat(clients = clients, config = config)
+        chats[defaultChat.id] = defaultChat
+        currentChatId = defaultChat.id
+    }
 
 
-    suspend fun sendMessage(text: String) : String {
-
-        conversationHistory.add(CoreMessage(role = "user", content = text))
-
-        val history = if (config.systemPrompt.isEmpty()) {
-            conversationHistory
-        } else {
-            listOf(CoreMessage(role = "system", content = config.systemPrompt)) + conversationHistory
-        }
-
-        val client = client()
-
-        // Measure response time
-        val startTime = System.currentTimeMillis()
-        val response = client.sendMessage(
-            conversationHistory = history,
-            temperature = config.temperature,
-            model = config.model
-        )
-        val duration = System.currentTimeMillis() - startTime
-
-        if (response.content.isNotEmpty()) {
-            // Update the last user message with prompt tokens
-            if (response.promptTokens != null && conversationHistory.isNotEmpty()) {
-                val lastIndex = conversationHistory.lastIndex
-                conversationHistory[lastIndex] = conversationHistory[lastIndex].copy(
-                    tokens = response.promptTokens
-                )
-            }
-
-            // Add assistant response with response tokens and duration
-            conversationHistory.add(
-                CoreMessage(
-                    role = "assistant",
-                    content = response.content,
-                    tokens = response.responseTokens,
-                    durationMs = duration
-                )
-            )
-
-            // Build response with optional token and time information
-            return if (config.showTokens) {
-                buildString {
-                    append(response.content)
-                    append("\n\n[")
-
-                    // Add token information if available
-                    if (response.promptTokens != null || response.responseTokens != null) {
-                        append("Tokens: ")
-                        if (response.promptTokens != null) append("prompt=${response.promptTokens}")
-                        if (response.promptTokens != null && response.responseTokens != null) append(", ")
-                        if (response.responseTokens != null) append("response=${response.responseTokens}")
-                        val total = (response.promptTokens ?: 0) + (response.responseTokens ?: 0)
-                        append(", total=$total")
-                        append(" | ")
-                    }
-
-                    // Add time information
-                    append("Time: ")
-                    if (duration < 1000) {
-                        append("${duration}ms")
-                    } else {
-                        val seconds = duration / 1000.0
-                        append(String.format("%.2fs", seconds))
-                    }
-                    append("]")
-                }
-            } else {
-                response.content
-            }
-        } else {
-            conversationHistory.removeLastOrNull()
-            return ""
-        }
+    suspend fun sendMessage(text: String): String {
+        return getCurrentChat().sendMessage(text)
     }
 
 
@@ -122,20 +68,12 @@ class App {
     }
 
     fun clearHistory(): String {
-        conversationHistory.clear()
-        if (config.systemPrompt.isNotEmpty()) {
-            conversationHistory.add(CoreMessage(role = "system", content = config.systemPrompt))
-        }
-        return "Conversation history cleared.\n"
+        return getCurrentChat().clearHistory()
     }
 
     fun getConfig(): String {
-        val totalTokens = conversationHistory.sumOf { it.tokens ?: 0 }
-        val responsesWithDuration = conversationHistory.filter { it.role == "assistant" && it.durationMs != null }
-        val totalDuration = responsesWithDuration.sumOf { it.durationMs ?: 0 }
-        val avgDuration = if (responsesWithDuration.isNotEmpty()) {
-            totalDuration / responsesWithDuration.size
-        } else 0
+        val currentChat = getCurrentChat()
+        val stats = currentChat.getStats()
 
         return buildString {
             appendLine("Current Configuration:")
@@ -144,11 +82,12 @@ class App {
             appendLine("- Temperature: ${config.temperature}")
             appendLine("- System Prompt: ${config.systemPrompt.ifEmpty { "(not set)" }}")
             appendLine("- Show Tokens: ${if (config.showTokens) "enabled" else "disabled"}")
-            appendLine("- Conversation History: ${conversationHistory.size} messages")
-            appendLine("- Total Tokens Used: $totalTokens")
-            if (responsesWithDuration.isNotEmpty()) {
-                appendLine("- Average Response Time: ${String.format("%.2fs", avgDuration / 1000.0)}")
-                appendLine("- Total Response Time: ${String.format("%.2fs", totalDuration / 1000.0)}")
+            appendLine("- Current Chat: ${currentChat.name}")
+            appendLine("- Conversation History: ${stats.messageCount} messages")
+            appendLine("- Total Tokens Used: ${stats.totalTokens}")
+            if (stats.avgResponseTime > 0) {
+                appendLine("- Average Response Time: ${String.format("%.2fs", stats.avgResponseTime / 1000.0)}")
+                appendLine("- Total Response Time: ${String.format("%.2fs", stats.totalResponseTime / 1000.0)}")
             }
             appendLine()
         }
@@ -242,6 +181,102 @@ class App {
                 appendLine("- $model")
             }
             appendLine()
+        }
+    }
+
+    fun createChat(name: String? = null): String {
+        val newChat = Chat(
+            name = name ?: "Chat ${chats.size + 1}",
+            clients = clients,
+            config = config
+        )
+        chats[newChat.id] = newChat
+        currentChatId = newChat.id
+        return "Created and switched to new chat: ${newChat.name}\n"
+    }
+
+    fun deleteChat(chatId: String?): String {
+        if (chatId.isNullOrEmpty()) {
+            return "Please provide a chat ID to delete\n"
+        }
+
+        if (chats.size == 1) {
+            return "Cannot delete the last chat. Create a new one first.\n"
+        }
+
+        // Support partial ID matching
+        val fullChatId = findChatByPartialId(chatId)
+        if (fullChatId == null) {
+            return "Chat not found: $chatId\n"
+        }
+
+        if (fullChatId == currentChatId) {
+            // Switch to another chat before deleting
+            val anotherChatId = chats.keys.first { it != fullChatId }
+            currentChatId = anotherChatId
+        }
+
+        val deletedChat = chats.remove(fullChatId)
+        return "Deleted chat: ${deletedChat?.name}. Switched to: ${getCurrentChat().name}\n"
+    }
+
+    fun switchChat(chatId: String?): String {
+        if (chatId.isNullOrEmpty()) {
+            return "Please provide a chat ID\n"
+        }
+
+        // Support partial ID matching
+        val fullChatId = findChatByPartialId(chatId)
+        if (fullChatId == null) {
+            return "Chat not found: $chatId\n"
+        }
+
+        currentChatId = fullChatId
+        val currentChat = getCurrentChat()
+        return "Switched to chat: ${currentChat.name}\n"
+    }
+
+    fun listChats(): String {
+        return buildString {
+            appendLine("Available chats:")
+            chats.forEach { (id, chat) ->
+                val stats = chat.getStats()
+                val current = if (id == currentChatId) " (current)" else ""
+                appendLine("- [${id.take(8)}] ${chat.name}$current - ${stats.messageCount} messages, ${stats.totalTokens} tokens")
+            }
+            appendLine()
+        }
+    }
+
+    fun renameChat(name: String?): String {
+        if (name.isNullOrEmpty()) {
+            return "Please provide a new name for the chat\n"
+        }
+        getCurrentChat().name = name
+        return "Chat renamed to: $name\n"
+    }
+
+    private fun getCurrentChat(): Chat {
+        return chats[currentChatId] ?: throw IllegalStateException("Current chat not found")
+    }
+
+    private fun findChatByPartialId(partialId: String): String? {
+        // First try exact match
+        if (chats.containsKey(partialId)) {
+            return partialId
+        }
+
+        // Then try partial match (case-insensitive)
+        val matches = chats.keys.filter { it.startsWith(partialId, ignoreCase = true) }
+
+        return when {
+            matches.isEmpty() -> null
+            matches.size == 1 -> matches.first()
+            else -> {
+                // Multiple matches - return exact prefix match if available
+                matches.firstOrNull { it.startsWith(partialId, ignoreCase = false) }
+                    ?: matches.first() // Otherwise return first match
+            }
         }
     }
 

@@ -12,20 +12,38 @@ object Commands {
     val models = Command(listOf("--models", "-ls"))
     val showTokens = Command(listOf("--showtokens", "-st"))
     val file = Command(listOf("--file", "-f"))
+    val createChat = Command(listOf("--newchat", "-nc"))
+    val deleteChat = Command(listOf("--deletechat", "-dc"))
+    val switchChat = Command(listOf("--switchchat", "-sc"))
+    val listChats = Command(listOf("--chats", "-lc"))
+    val renameChat = Command(listOf("--renamechat", "-rc"))
 }
 
 const val HELP_TEXT = """
 Available commands:
-- exit, quit: Exit the chat
-- --client <name>, -cl <name>: Switch client (perplexity/huggingface)
+
+Configuration:
+- --client <name>, -cl <name>: Switch client (perplexity/huggingface/lmstudio)
 - --models, -ls: List available models for current client
 - --temperature <value>, -t <value>: Set temperature (0.0 to 1.0)
 - --model <name>, -m <name>: Set model name
 - --systemprompt <prompt>, -sp <prompt>: Set system prompt
 - --showtokens, -st: Toggle showing token counts after each message
 - --config, -c: Show current configuration
+
+Chat Management:
+- --newchat [name], -nc [name]: Create a new chat (optionally with a name)
+- --deletechat <id>, -dc <id>: Delete a chat by ID
+- --switchchat <id>, -sc <id>: Switch to a different chat by ID
+- --chats, -lc: List all chats
+- --renamechat <name>, -rc <name>: Rename current chat
+- clear, reset: Clear current chat history
+
+File Operations:
 - --file <path>, -f <path>: Read file content and send to AI
-- clear, reset: Clear conversation history
+
+Other:
+- exit, quit: Exit the application
 - help: Show this help message
 
 Command Queue:
