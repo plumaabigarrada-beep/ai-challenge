@@ -12,6 +12,7 @@ ai-challenge/
 │   ├── main/kotlin/
 │   │   ├── Main.kt                 # Entry point with CLI loop (97 lines)
 │   │   ├── App.kt                  # Core application logic (249 lines)
+│   │   ├── handleCommands.kt       # Command handler routing logic (57 lines)
 │   │   ├── Client.kt               # Client interface (12 lines)
 │   │   ├── PerplexityClient.kt     # Perplexity API implementation (171 lines)
 │   │   ├── HuggingFaceClient.kt    # HuggingFace API implementation (166 lines)
@@ -129,8 +130,16 @@ HuggingFace API wrapper:
 #### Main.kt
 Entry point that provides:
 - REPL-style command loop
-- Input parsing and command routing
+- Input parsing and command queue processing
 - Colored terminal output for UX
+
+#### handleCommands.kt
+Command routing function that:
+- Matches user input against defined commands
+- Extracts command parameters (temperature, model, file paths, etc.)
+- Routes commands to appropriate App methods
+- Handles chat messages when no command matches
+- Returns formatted responses for display
 
 ## Configuration
 
