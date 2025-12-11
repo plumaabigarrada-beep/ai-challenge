@@ -1,5 +1,37 @@
 # AI Challenge - Project Structure and Description
 
+## Documentation Format
+
+This documentation uses a modular multi-file structure optimized for AI context management and selective loading.
+
+### Structure
+- **CLAUDE.md**: Main index file with section links
+- **claude/**: Directory containing individual section files
+- **Filename format**: `{8-char-uuid}-{descriptive-name}.md`
+
+### Benefits
+- **Unique identifiers**: UUIDs prevent filename conflicts
+- **Selective loading**: Load only relevant sections to reduce token usage
+- **Reorganization flexibility**: Section names can change without breaking UUID references
+- **Version control friendly**: Git diffs are cleaner with isolated file changes
+- **AI-optimized**: Claude can read specific sections on demand
+
+### Example
+```
+CLAUDE.md
+claude/
+  ├── a1b2c3d4-overview.md
+  ├── e5f6g7h8-project-structure.md
+  └── m9n0p1q2-core-features.md
+```
+
+**CLAUDE.md** contains links:
+```markdown
+## Overview [a1b2c3d4-overview.md]
+## Project Structure [e5f6g7h8-project-structure.md]
+## Core Features [m9n0p1q2-core-features.md]
+```
+
 ## Overview
 
 This is a Kotlin-based command-line chatbot application that provides an interactive interface to communicate with multiple AI models. The application acts as a CLI tool that allows users to switch between different AI providers, configure various parameters, and maintain conversation history with token and timing metrics.
