@@ -2,20 +2,25 @@ package commands
 
 import client.Client
 import org.example.ClientType
+import org.example.Command
 import org.example.Config
 
-class SetClientCommand {
-    fun execute(config: Config, clients: Map<ClientType, Client>, clientName: String?): String {
-        if (clientName.isNullOrEmpty()) {
+class SetClientCommand(
+    private val config: Config,
+    private val clients: Map<ClientType, Client>,
+    values: List<String>
+) : Command(values) {
+    override suspend fun execute(args: String?): String {
+        if (args.isNullOrEmpty()) {
             return "Please provide a client name (perplexity, huggingface, or lmstudio)\n"
         }
 
-        val newClientType = when (clientName.lowercase()) {
+        val newClientType = when (args.lowercase()) {
             "perplexity", "pplx" -> ClientType.PERPLEXITY
             "huggingface", "hf" -> ClientType.HUGGINGFACE
             "lmstudio", "lm" -> ClientType.LMSTUDIO
             else -> {
-                return "Unknown client: $clientName. Available: perplexity, huggingface, lmstudio\n"
+                return "Unknown client: $args. Available: perplexity, huggingface, lmstudio\n"
             }
         }
 

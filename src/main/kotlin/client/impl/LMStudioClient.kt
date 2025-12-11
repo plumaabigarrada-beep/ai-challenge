@@ -79,7 +79,7 @@ class LMStudioClient : Client {
 
     override fun models(): List<String> {
         return listOf(
-            "qwen/qwen2.5-coder-14b"
+            "qwen/qwen3-coder-30b"
         )
     }
 

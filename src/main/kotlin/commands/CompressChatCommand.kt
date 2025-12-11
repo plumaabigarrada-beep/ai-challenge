@@ -1,12 +1,20 @@
 package commands
 
-import chat.Chat
+import chatcontainer.ChatContainer
 import compressor.ChatCompressor
+import org.example.Command
 
-class CompressChatCommand {
-    suspend fun execute(chatCompressor: ChatCompressor, currentChat: Chat): String {
+class CompressChatCommand(
+    private val chatContainer: ChatContainer,
+    private val chatCompressor: ChatCompressor,
+    values: List<String>
+) : Command(values) {
+    override suspend fun execute(args: String?): String {
+        val currentChat = chatContainer.getCurrentChat()
+            ?: return "No active chat\n"
+
         return try {
-            val compressedChat = chatCompressor.compress(currentChat)
+            chatCompressor.compress(currentChat)
             "Chat history compressed successfully.\n"
         } catch (e: Exception) {
             "Error compressing chat: ${e.message}\n"

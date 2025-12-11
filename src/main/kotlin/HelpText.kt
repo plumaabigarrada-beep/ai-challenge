@@ -1,28 +1,5 @@
 package org.example
 
-object Commands {
-    val exit = Command(listOf("--exit", "--quit"))
-    val temperature = Command(listOf("--temperature", "-t"))
-    val systemPrompt = Command(listOf("--systemprompt", "-sp"))
-    val model = Command(listOf("--model", "-m"))
-    val clear = Command(listOf("clear", "reset"))
-    val help = Command(listOf("help", "--help", "-h"))
-    val config = Command(listOf("--config", "-c"))
-    val client = Command(listOf("--client", "-cl"))
-    val models = Command(listOf("--models", "-ls"))
-    val showTokens = Command(listOf("--showtokens", "-st"))
-    val file = Command(listOf("--file", "-f"))
-    val createChat = Command(listOf("--newchat", "-nc"))
-    val deleteChat = Command(listOf("--deletechat", "-dc"))
-    val switchChat = Command(listOf("--switchchat", "-sc"))
-    val listChats = Command(listOf("--chats", "-lc"))
-    val renameChat = Command(listOf("--renamechat", "-rc"))
-    val compress = Command(listOf("--compress", "-cp"))
-    val save = Command(listOf("--save", "-s"))
-    val autoCompress = Command(listOf("--autocompress", "-ac"))
-    val autoCompressThreshold = Command(listOf("--acthreshold", "-act"))
-}
-
 const val HELP_TEXT = """
 Available commands:
 
@@ -51,8 +28,8 @@ File Operations:
 - --save [directory], -s [directory]: Save current chat to JSON file (default: saved_chats/)
 
 Other:
-- exit, quit: Exit the application
-- help: Show this help message
+- --exit, --quit: Exit the application
+- --help: Show this help message
 
 Command Queue:
 - Use '&&' to chain multiple commands

@@ -1,13 +1,21 @@
 package commands
 
-import chat.Chat
+import chatcontainer.ChatContainer
+import org.example.Command
 
-class RenameChatCommand {
-    fun execute(currentChat: Chat, name: String?): String {
-        if (name.isNullOrEmpty()) {
+class RenameChatCommand(
+    private val chatContainer: ChatContainer,
+    values: List<String>
+) : Command(values) {
+    override suspend fun execute(args: String?): String {
+        if (args.isNullOrEmpty()) {
             return "Please provide a new name for the chat\n"
         }
-        currentChat.name = name
-        return "Chat renamed to: $name\n"
+
+        val currentChat = chatContainer.getCurrentChat()
+            ?: return "No active chat\n"
+
+        currentChat.name = args
+        return "Chat renamed to: $args\n"
     }
 }

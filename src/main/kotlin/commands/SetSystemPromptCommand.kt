@@ -1,14 +1,18 @@
 package commands
 
+import org.example.Command
 import org.example.Config
 
-class SetSystemPromptCommand {
-    fun execute(config: Config, prompt: String?): String {
-        if (prompt.isNullOrEmpty()) {
+class SetSystemPromptCommand(
+    private val config: Config,
+    values: List<String>
+) : Command(values) {
+    override suspend fun execute(args: String?): String {
+        if (args.isNullOrEmpty()) {
             return "Please provide a system prompt\n"
         }
 
-        config.systemPrompt = prompt
+        config.systemPrompt = args
 
         return "System prompt set.\n"
     }

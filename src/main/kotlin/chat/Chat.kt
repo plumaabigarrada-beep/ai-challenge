@@ -1,5 +1,6 @@
 package chat
 
+import chatsaver.ChatSaver
 import client.Client
 import client.CoreClientResponse
 import compressor.ChatCompressor
@@ -13,8 +14,9 @@ class Chat(
     val id: String = UUID.randomUUID().toString(),
     var name: String = "Chat ${id.take(8)}",
     private val clients: Map<ClientType, Client>,
-    private val config: Config,
-    private val chatCompressor: ChatCompressor? = null
+    val config: Config,
+    private val chatCompressor: ChatCompressor,
+    private val saver: ChatSaver,
 ) {
 
     private val conversationHistory = mutableListOf<CoreMessage>()

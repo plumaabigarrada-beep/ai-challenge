@@ -1,12 +1,21 @@
 package commands
 
-import chat.Chat
+import chatcontainer.ChatContainer
+import org.example.Command
 import org.example.Config
 import org.example.ContextWindowConfig
 
-class GetConfigCommand {
-    fun execute(config: Config, currentChat: Chat): String {
+class GetConfigCommand(
+    private val chatContainer: ChatContainer,
+    values: List<String>
+) : Command(values) {
+    override suspend fun execute(args: String?): String {
+        val currentChat = chatContainer.getCurrentChat()
+            ?: return "No active chat\n"
+
         val stats = currentChat.getStats()
+        val config = currentChat.config
+
         val contextWindow = ContextWindowConfig.getContextWindow(config.model)
         val threshold = (contextWindow * config.autoCompressThreshold).toInt()
 

@@ -1,7 +1,6 @@
 package org.example
 
 import createApp
-import handleCommands
 import kotlinx.coroutines.runBlocking
 
 fun main() = runBlocking {
@@ -12,37 +11,52 @@ fun main() = runBlocking {
     println("${Colors.INFO}Chat started! Type 'help' for available commands.${Colors.RESET}\n")
     println("${Colors.INFO}Tip: Use '&&' to chain multiple commands (e.g., '--model sonar && Hello')${Colors.RESET}\n")
 
-    while (true) {
+    loop@ while (true) {
+
         print("${Colors.USER}${Colors.BOLD}You:${Colors.RESET} ")
         val userInput = readlnOrNull()?.trim() ?: break
 
-        if (userInput.isEmpty()) continue
-        if (Commands.exit.matches(userInput)) {
-            println("${Colors.INFO}Goodbye!${Colors.RESET}")
-            break
+        if (userInput == "") {
+            continue
         }
 
-        // Split input by && to create command queue
-        val commandQueue = userInput.split("&&").map { it.trim() }.filter { it.isNotEmpty() }
+        val inoutCommands = userInput.split("&&")
 
-        for ((index, command) in commandQueue.withIndex()) {
-            if (Commands.exit.matches(command)) {
+        inoutCommands.forEach {
+            val input = it.trim()
+
+            if (input == "") { return@forEach }
+
+            if (inoutCommands.size > 1) {
+                println("${Colors.USER}${Colors.BOLD}You:${Colors.RESET} $input")
+            }
+
+
+            if (input == "--exit" || input == "exit" || input == "quit") {
                 println("${Colors.INFO}Goodbye!${Colors.RESET}")
-                app.close()
-                return@runBlocking
+                break
             }
 
-            val response = handleCommands(command, app)
 
-            println(response)
-
-            // Add spacing between commands if there are multiple
-            if (commandQueue.size > 1 && index < commandQueue.size - 1) {
-                println("${Colors.INFO}$command${Colors.RESET}")
+            val command = app.commands.find { it.matches(input) }
+            if (command != null) {
+                executeCommand(command, input)
+            } else {
+                val result = app.sendMessageCommand.execute(input)
+                println("${Colors.ASSISTANT}${Colors.BOLD}Assistant:${Colors.RESET} ${Colors.ASSISTANT}$result${Colors.RESET}\n")
             }
+
         }
+
+
     }
 
     app.close()
+}
+
+private suspend fun executeCommand(command: Command, userInput: String) {
+    val args = command.extractValue(userInput)
+    val result = command.execute(args)
+    println("${Colors.ASSISTANT}${Colors.BOLD}Assistant:${Colors.RESET} ${Colors.ASSISTANT}$result${Colors.RESET}\n")
 }
 

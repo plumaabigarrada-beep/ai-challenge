@@ -1,9 +1,15 @@
 package commands
 
+import org.example.Command
 import org.example.Config
 
-class SetAutoCompressThresholdCommand {
-    fun execute(config: Config, threshold: Double?): String {
+class SetAutoCompressThresholdCommand(
+    private val config: Config,
+    values: List<String>
+) : Command(values) {
+    override suspend fun execute(args: String?): String {
+        val threshold = args?.toDoubleOrNull()
+
         if (threshold == null) {
             return "Current auto-compress threshold: ${(config.autoCompressThreshold * 100).toInt()}%\n"
         }

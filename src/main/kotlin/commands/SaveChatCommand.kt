@@ -1,14 +1,22 @@
 package commands
 
-import chat.Chat
+import chatcontainer.ChatContainer
 import chatsaver.ChatSaver
+import org.example.Command
 
-class SaveChatCommand {
-    fun execute(chatSaver: ChatSaver, currentChat: Chat, directory: String? = null): String {
-        return if (directory.isNullOrEmpty()) {
+class SaveChatCommand(
+    private val chatContainer: ChatContainer,
+    private val chatSaver: ChatSaver,
+    values: List<String>
+) : Command(values) {
+    override suspend fun execute(args: String?): String {
+        val currentChat = chatContainer.getCurrentChat()
+            ?: return "No active chat\n"
+
+        return if (args.isNullOrEmpty()) {
             chatSaver.saveChat(currentChat)
         } else {
-            chatSaver.saveChat(currentChat, directory)
+            chatSaver.saveChat(currentChat, args)
         }
     }
 }

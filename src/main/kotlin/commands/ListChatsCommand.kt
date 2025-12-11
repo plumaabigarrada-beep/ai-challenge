@@ -1,9 +1,16 @@
 package commands
 
-import chat.Chat
+import chatcontainer.ChatContainer
+import org.example.Command
 
-class ListChatsCommand {
-    fun execute(chats: Map<String, Chat>, currentChatId: String): String {
+class ListChatsCommand(
+    private val chatContainer: ChatContainer,
+    values: List<String>
+) : Command(values) {
+    override suspend fun execute(args: String?): String {
+        val chats = chatContainer.getChats()
+        val currentChatId = chatContainer.getCurrentChatId()
+
         return buildString {
             appendLine("Available chats:")
             chats.forEach { (id, chat) ->

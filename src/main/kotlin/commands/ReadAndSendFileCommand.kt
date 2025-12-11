@@ -1,31 +1,38 @@
 package commands
 
-import chat.Chat
+import chatcontainer.ChatContainer
 import org.example.Colors
+import org.example.Command
 
-class ReadAndSendFileCommand {
-    suspend fun execute(chat: Chat, filePath: String?): String {
+class ReadAndSendFileCommand(
+    private val chatContainer: ChatContainer,
+    values: List<String>
+) : Command(values) {
+    override suspend fun execute(args: String?): String {
         // Validate path parameter
-        if (filePath.isNullOrEmpty()) {
+        if (args.isNullOrEmpty()) {
             return "${Colors.ERROR}Please provide a file path${Colors.RESET}\n"
         }
 
+        val currentChat = chatContainer.getCurrentChat()
+            ?: return "No active chat\n"
+
         return try {
-            val file = java.io.File(filePath)
+            val file = java.io.File(args)
 
             // Validate file existence
             if (!file.exists()) {
-                return "${Colors.ERROR}File not found: $filePath${Colors.RESET}\n"
+                return "${Colors.ERROR}File not found: $args${Colors.RESET}\n"
             }
 
             // Validate it's a file (not a directory)
             if (!file.isFile) {
-                return "${Colors.ERROR}Path is not a file: $filePath${Colors.RESET}\n"
+                return "${Colors.ERROR}Path is not a file: $args${Colors.RESET}\n"
             }
 
             // Validate readability
             if (!file.canRead()) {
-                return "${Colors.ERROR}Cannot read file (permission denied): $filePath${Colors.RESET}\n"
+                return "${Colors.ERROR}Cannot read file (permission denied): $args${Colors.RESET}\n"
             }
 
             // Read file content
@@ -39,13 +46,13 @@ class ReadAndSendFileCommand {
             }
 
             buildString {
-                appendLine("${Colors.INFO}Reading file: $filePath${Colors.RESET}")
+                appendLine("${Colors.INFO}Reading file: $args${Colors.RESET}")
                 appendLine("${Colors.USER}File content preview:${Colors.RESET}")
                 appendLine("${Colors.USER}$preview${Colors.RESET}\n")
                 appendLine("${Colors.INFO}Sending to AI...${Colors.RESET}\n")
 
                 // Send to AI and get response
-                val response = chat.sendMessage(content)
+                val response = currentChat.sendMessage(content)
                 appendLine("${Colors.ASSISTANT}${Colors.BOLD}Assistant:${Colors.RESET} ${Colors.ASSISTANT}$response${Colors.RESET}\n")
             }
 

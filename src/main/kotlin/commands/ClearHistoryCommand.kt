@@ -1,9 +1,15 @@
 package commands
 
-import chat.Chat
+import chatcontainer.ChatContainer
+import org.example.Command
 
-class ClearHistoryCommand {
-    fun execute(chat: Chat): String {
-        return chat.clearHistory()
+class ClearHistoryCommand(
+    private val chatContainer: ChatContainer,
+    values: List<String>
+) : Command(values) {
+    override suspend fun execute(args: String?): String {
+        val currentChat = chatContainer.getCurrentChat()
+            ?: return "No active chat\n"
+        return currentChat.clearHistory()
     }
 }

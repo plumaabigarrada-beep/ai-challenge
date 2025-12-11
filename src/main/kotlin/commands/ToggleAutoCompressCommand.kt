@@ -1,9 +1,13 @@
 package commands
 
+import org.example.Command
 import org.example.Config
 
-class ToggleAutoCompressCommand {
-    fun execute(config: Config): String {
+class ToggleAutoCompressCommand(
+    private val config: Config,
+    values: List<String>
+) : Command(values) {
+    override suspend fun execute(args: String?): String {
         config.autoCompressEnabled = !config.autoCompressEnabled
         return "Auto-compress ${if (config.autoCompressEnabled) "enabled" else "disabled"}\n"
     }

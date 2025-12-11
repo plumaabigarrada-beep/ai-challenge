@@ -1,7 +1,7 @@
 package org.example
 
 
-data class Command(
+abstract class Command(
     val values: List<String>
 ) {
     fun matches(text: String): Boolean {
@@ -23,4 +23,6 @@ data class Command(
     fun extractDoubleValue(input: String) : Double? {
         return extractValue(input)?.toDoubleOrNull()
     }
+
+    abstract suspend fun execute(args: String?): String
 }
