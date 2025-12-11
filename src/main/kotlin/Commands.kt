@@ -17,6 +17,10 @@ object Commands {
     val switchChat = Command(listOf("--switchchat", "-sc"))
     val listChats = Command(listOf("--chats", "-lc"))
     val renameChat = Command(listOf("--renamechat", "-rc"))
+    val compress = Command(listOf("--compress", "-cp"))
+    val save = Command(listOf("--save", "-s"))
+    val autoCompress = Command(listOf("--autocompress", "-ac"))
+    val autoCompressThreshold = Command(listOf("--acthreshold", "-act"))
 }
 
 const val HELP_TEXT = """
@@ -29,6 +33,8 @@ Configuration:
 - --model <name>, -m <name>: Set model name
 - --systemprompt <prompt>, -sp <prompt>: Set system prompt
 - --showtokens, -st: Toggle showing token counts after each message
+- --autocompress, -ac: Toggle auto-compress (compresses when token limit approached)
+- --acthreshold <value>, -act <value>: Set auto-compress threshold (0.5-0.95, e.g., 0.8 = 80%)
 - --config, -c: Show current configuration
 
 Chat Management:
@@ -38,9 +44,11 @@ Chat Management:
 - --chats, -lc: List all chats
 - --renamechat <name>, -rc <name>: Rename current chat
 - clear, reset: Clear current chat history
+- --compress, -cp: Compress current chat history using AI summarization
 
 File Operations:
 - --file <path>, -f <path>: Read file content and send to AI
+- --save [directory], -s [directory]: Save current chat to JSON file (default: saved_chats/)
 
 Other:
 - exit, quit: Exit the application

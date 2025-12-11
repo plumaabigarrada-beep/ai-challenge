@@ -1,7 +1,8 @@
+import compressor.COMPRESS_PTOMPT
 import compressor.ChatCompressor
+import chatsaver.ChatSaver
 import org.example.App
 import org.example.ClientType
-import org.example.Commands.config
 import org.example.Config
 import org.example.HuggingFaceClient
 import org.example.LMStudioClient
@@ -25,11 +26,14 @@ fun createApp() : App {
         compressPrompt = COMPRESS_PTOMPT,
     )
 
+    val chatSaver = ChatSaver()
+
     val config = Config()
 
     return App(
         clients = clients,
         chatCompressor = compressor,
+        chatSaver = chatSaver,
         config = config,
     )
 }

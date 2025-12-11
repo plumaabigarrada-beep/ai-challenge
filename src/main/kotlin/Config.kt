@@ -11,5 +11,8 @@ data class Config(
     var temperature: Double = 0.7,
     var systemPrompt: String = "",
     var clientType: ClientType = ClientType.LMSTUDIO,
-    var showTokens: Boolean = true
+    var showTokens: Boolean = true,
+    var autoCompressEnabled: Boolean = false,
+    var autoCompressThreshold: Double = 0.80, // Compress at 80% of context window
+    var autoCompressNotify: Boolean = true // Notify user when auto-compressing
 )

@@ -74,6 +74,24 @@ suspend fun handleCommands(userInput: String, app: App): String = when {
         app.renameChat(name)
     }
 
+    Commands.compress.matches(userInput) -> {
+        app.compressChat()
+    }
+
+    Commands.save.matches(userInput) -> {
+        val directory = Commands.save.extractValue(userInput)
+        app.saveChat(directory)
+    }
+
+    Commands.autoCompress.matches(userInput) -> {
+        app.toggleAutoCompress()
+    }
+
+    Commands.autoCompressThreshold.matches(userInput) -> {
+        val threshold = Commands.autoCompressThreshold.extractDoubleValue(userInput)
+        app.setAutoCompressThreshold(threshold)
+    }
+
     else -> {
         val response = app.sendMessage(userInput)
         "\n${Colors.ASSISTANT}${Colors.BOLD}Assistant:${Colors.RESET} ${Colors.ASSISTANT}$response${Colors.RESET}\n"

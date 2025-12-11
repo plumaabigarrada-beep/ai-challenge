@@ -2,8 +2,10 @@ package chat
 
 import client.Client
 import client.CoreClientResponse
+import compressor.ChatCompressor
 import org.example.ClientType
 import org.example.Config
+import org.example.ContextWindowConfig
 import org.example.CoreMessage
 import java.util.UUID
 
@@ -11,12 +13,19 @@ class Chat(
     val id: String = UUID.randomUUID().toString(),
     var name: String = "Chat ${id.take(8)}",
     private val clients: Map<ClientType, Client>,
-    private val config: Config
+    private val config: Config,
+    private val chatCompressor: ChatCompressor? = null
 ) {
 
     private val conversationHistory = mutableListOf<CoreMessage>()
+    var lastAutoCompressNotification: String? = null
 
     suspend fun sendMessage(text: String): String {
+        // Check if auto-compression is needed before sending
+        val compressionNotice = checkAndAutoCompress()
+
+        // Clear notification after being read
+        lastAutoCompressNotification = null
         conversationHistory.add(CoreMessage(role = "user", content = text))
 
         val history = if (config.systemPrompt.isEmpty()) {
@@ -56,10 +65,17 @@ class Chat(
             )
 
             // Build response with optional token and time information
-            return if (config.showTokens) {
+            val responseText = if (config.showTokens) {
                 formatResponseWithTokens(response, duration)
             } else {
                 response.content
+            }
+
+            // Prepend compression notice if auto-compressed
+            return if (compressionNotice != null) {
+                "$compressionNotice\n$responseText"
+            } else {
+                responseText
             }
         } else {
             conversationHistory.removeLastOrNull()
@@ -89,6 +105,46 @@ class Chat(
             avgResponseTime = avgDuration,
             totalResponseTime = totalDuration
         )
+    }
+
+    fun getConversationHistory(): List<CoreMessage> {
+        return conversationHistory.toList()
+    }
+
+    fun setConversationHistory(history: List<CoreMessage>) {
+        conversationHistory.clear()
+        conversationHistory.addAll(history)
+    }
+
+    fun formatHistoryAsString(): String = buildString {
+        conversationHistory.forEach { message ->
+            appendLine("${message.role.uppercase()}:")
+            appendLine(message.content)
+            appendLine()
+        }
+    }
+
+    private suspend fun checkAndAutoCompress(): String? {
+        if (!config.autoCompressEnabled || chatCompressor == null) {
+            return null
+        }
+
+        val stats = getStats()
+        val contextWindow = ContextWindowConfig.getContextWindow(config.model)
+        val threshold = (contextWindow * config.autoCompressThreshold).toInt()
+
+        if (stats.totalTokens >= threshold) {
+            // Auto-compress the chat
+            chatCompressor.compress(this)
+
+            return if (config.autoCompressNotify) {
+                "[Auto-compressed: ${stats.totalTokens} tokens exceeded ${(config.autoCompressThreshold * 100).toInt()}% of $contextWindow token limit]"
+            } else {
+                null
+            }
+        }
+
+        return null
     }
 
     private fun formatResponseWithTokens(response: CoreClientResponse, duration: Long): String = buildString {
