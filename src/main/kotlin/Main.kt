@@ -1,11 +1,13 @@
 package org.example
 
+import createApp
 import handleCommands
 import kotlinx.coroutines.runBlocking
 
 fun main() = runBlocking {
 
-    val app = App()
+
+    val app = createApp()
 
     println("${Colors.INFO}Chat started! Type 'help' for available commands.${Colors.RESET}\n")
     println("${Colors.INFO}Tip: Use '&&' to chain multiple commands (e.g., '--model sonar && Hello')${Colors.RESET}\n")
@@ -26,7 +28,7 @@ fun main() = runBlocking {
         for ((index, command) in commandQueue.withIndex()) {
             if (Commands.exit.matches(command)) {
                 println("${Colors.INFO}Goodbye!${Colors.RESET}")
-                app.exit()
+                app.close()
                 return@runBlocking
             }
 
@@ -41,6 +43,6 @@ fun main() = runBlocking {
         }
     }
 
-    app.exit()
+    app.close()
 }
 

@@ -86,7 +86,7 @@ class HuggingFaceClient : Client {
         )
     }
 
-    fun close() {
+    override fun close() {
         client.close()
     }
 }

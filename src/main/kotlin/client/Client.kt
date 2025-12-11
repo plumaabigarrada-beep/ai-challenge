@@ -12,4 +12,6 @@ interface Client {
 
     fun models() : List<String>
 
+    fun close()
+
 }

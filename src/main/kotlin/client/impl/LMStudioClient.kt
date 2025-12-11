@@ -83,7 +83,7 @@ class LMStudioClient : Client {
         )
     }
 
-    fun close() {
+    override fun close() {
         client.close()
     }
 }

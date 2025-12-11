@@ -2,19 +2,13 @@ package org.example
 
 import chat.Chat
 import client.Client
+import compressor.ChatCompressor
 
-class App {
-
-    private val config = Config()
-    private val perplexityClient = PerplexityClient()
-    private val huggingFaceClient = HuggingFaceClient()
-    private val lmStudioClient = LMStudioClient()
-
-    private val clients = mapOf(
-        ClientType.PERPLEXITY to perplexityClient,
-        ClientType.HUGGINGFACE to huggingFaceClient,
-        ClientType.LMSTUDIO to lmStudioClient
-    )
+class App(
+    private val chatCompressor: ChatCompressor,
+    private val clients: Map<ClientType, Client>,
+    private val config: Config,
+) {
 
     private val chats = mutableMapOf<String, Chat>()
     private var currentChatId: String
@@ -32,10 +26,8 @@ class App {
     }
 
 
-    fun exit() {
-        perplexityClient.close()
-        huggingFaceClient.close()
-        lmStudioClient.close()
+    fun close() {
+        clients.values.forEach { it.close() }
     }
 
     fun setTemperature(temperature: Double?) : String {
@@ -280,9 +272,5 @@ class App {
         }
     }
 
-    private fun client(): Client = when (config.clientType) {
-        ClientType.PERPLEXITY -> perplexityClient
-        ClientType.HUGGINGFACE -> huggingFaceClient
-        ClientType.LMSTUDIO -> lmStudioClient
-    }
+    private fun client(): Client = clients[config.clientType] ?: throw IllegalStateException("Client not registered")
 }
