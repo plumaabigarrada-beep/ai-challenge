@@ -253,25 +253,51 @@ data class Config(
 
 ## Technical Details
 
+### Multi-Chat System
+- Each chat has a unique UUID identifier
+- Chats stored in a `MutableMap<String, Chat>` with ID as key
+- Current chat tracked via `currentChatId` reference
+- Default chat created automatically on app initialization
+- Cannot delete the last remaining chat (safety feature)
+- Partial ID matching supports user-friendly chat switching (e.g., use "a1b2c3d4" instead of full UUID)
+
+### Partial ID Matching Algorithm
+- First attempts exact match for full UUID
+- Falls back to case-insensitive prefix matching
+- Returns first match if only one chat ID starts with the input
+- Handles ambiguous matches by preferring exact case match
+- Example: `--switchchat a1b2` matches chat with ID starting "a1b2..."
+
 ### Async/Await
 Uses Kotlin coroutines with `runBlocking` for synchronous CLI execution of async operations.
 
 ### Error Handling
-Both clients include comprehensive try-catch blocks for:
-- Serialization errors
-- HTTP client errors (4xx)
-- Server errors (5xx)
-- Generic exceptions with stack traces
+Centralized error handling via ErrorHandler.kt:
+- **SerializationException**: JSON parsing errors with debugging info
+- **ClientRequestException (4xx)**: Client errors with response body
+- **ServerResponseException (5xx)**: Server errors with response body
+- **Generic exceptions**: Full stack traces for debugging
+- Optional additional notes per client (e.g., LM Studio connection help)
+- All clients use shared `errorMessage()` function
+
+### Shared API Models
+All clients use OpenAI-compatible models from ChatCompletionModels.kt:
+- Eliminates ~130 lines of duplicate code
+- Ensures consistent API structure across clients
+- Single source of truth for request/response formats
+- Easy to add new OpenAI-compatible clients
 
 ### Output Formatting
 - Terminal colors (cyan for user, green for assistant, yellow for info, red for errors)
 - Token and timing information in brackets after responses
 - Pretty-printed JSON for debugging
+- Current chat name shown in configuration display
 
 ### Command Queue
 - Supports chaining multiple commands with `&&` separator
 - Sequential execution from left to right
 - Allows configuration changes followed by queries in one line
+- Example: `--newchat Debug && --temperature 0.3 && Explain this bug`
 
 ### File Reading
 - Uses `java.io.File` API for file operations
@@ -282,10 +308,144 @@ Both clients include comprehensive try-catch blocks for:
 - Error handling: file not found, permission denied, IO exceptions
 - Example: `--file report.txt` or `-f code.kt && review this`
 
+### Chat Statistics
+Each chat tracks independently:
+- Message count (user + assistant messages)
+- Total tokens consumed (prompt + response)
+- Average response time (calculated from assistant messages)
+- Total response time (sum of all response durations)
+- Accessible via `--config` command or `--chats` list
+
 ## Development History
 
-Git commits show progressive development:
-- `init`: Initial commit
-- Day 2, 3, 6 challenges: Feature additions
-- Day 7 challenge: File reading command
-- Recent enhancements: tokens showing, time measuring, colors, commands queue, file reading, LM Studio client support
+### Major Milestones
+- **Initial Release**: Basic chatbot with Perplexity integration
+- **Multi-Client Support**: Added HuggingFace and LM Studio clients
+- **File Reading**: Day 7 challenge - read and send files to AI
+- **Code Quality Improvements**:
+  - Extracted shared error handling to ErrorHandler.kt
+  - Extracted shared API models to ChatCompletionModels.kt
+  - Organized clients into `client/impl/` package structure
+- **Multi-Chat Architecture**: Complete refactoring to support multiple chat sessions
+  - Moved chat logic from App.kt to Chat.kt
+  - Added chat management commands (create, delete, switch, list, rename)
+  - Implemented partial ID matching for user convenience
+  - Per-chat statistics and independent conversation histories
+
+### Recent Enhancements
+- Token tracking and display toggle
+- Response time measurement (ms/seconds)
+- Terminal color coding for better UX
+- Command queue with `&&` separator
+- LM Studio local client support
+- Comprehensive error handling across all clients
+- Multi-chat session management
+- Shared OpenAI-compatible API models
+
+## Usage Examples
+
+### Basic Chat
+```
+> Hello!
+Assistant: Hi! How can I help you today?
+
+> What is Kotlin?
+Assistant: Kotlin is a modern programming language...
+```
+
+### Multi-Chat Workflow
+```
+> --newchat Project Planning
+Created and switched to new chat: Project Planning
+
+> --chats
+Available chats:
+- [a1b2c3d4] Chat 1 - 5 messages, 240 tokens
+- [e5f6g7h8] Project Planning (current) - 0 messages, 0 tokens
+
+> --switchchat a1b2
+Switched to chat: Chat 1
+
+> --renamechat Bug Investigation
+Chat renamed to: Bug Investigation
+
+> --deletechat e5f6
+Deleted chat: Project Planning. Switched to: Bug Investigation
+```
+
+### Configuration Changes
+```
+> --client lmstudio && --model qwen/qwen2.5-coder-14b && --temperature 0.3
+Client switched to lmstudio. Model set to qwen/qwen2.5-coder-14b
+Temperature set to 0.3
+
+> --config
+Current Configuration:
+- Client: lmstudio
+- Model: qwen/qwen2.5-coder-14b
+- Temperature: 0.3
+- System Prompt: (not set)
+- Show Tokens: enabled
+- Current Chat: Bug Investigation
+- Conversation History: 12 messages
+- Total Tokens Used: 1456
+```
+
+### File Reading
+```
+> --file src/Main.kt
+Reading file: src/Main.kt
+File content preview:
+package org.example
+
+import kotlinx.coroutines.runBlocking
+
+fun main() = runBlocking {
+    val app = App()
+...
+
+Sending to AI...
+Assistant: This is the main entry point of your Kotlin application...
+```
+
+## Key Design Benefits
+
+### 1. **Code Reusability**
+- Shared `ChatCompletionModels.kt` eliminates 130+ lines of duplicate code
+- Single `ErrorHandler.kt` used by all three clients
+- Common `Client` interface for consistent API across providers
+
+### 2. **Maintainability**
+- Clear separation of concerns (App → Chat → Client)
+- Package structure (`client/`, `chat/`) organizes related code
+- Centralized error handling means one place to update error messages
+- Shared models mean API changes only need updates in one file
+
+### 3. **Scalability**
+- Easy to add new OpenAI-compatible clients (just implement Client interface and use shared models)
+- Multi-chat architecture supports unlimited chat sessions
+- Partial ID matching makes UX scalable as chat count grows
+
+### 4. **User Experience**
+- Partial ID matching allows typing just "a1b2" instead of full UUID
+- Independent chat sessions for different contexts/projects
+- Per-chat statistics for tracking usage
+- Colored terminal output for better readability
+- Command chaining with `&&` for efficient workflows
+
+### 5. **Testability**
+- Interface-based design enables easy mocking
+- Separated concerns make unit testing straightforward
+- Clear boundaries between chat logic, client communication, and app orchestration
+
+## Future Enhancement Possibilities
+
+- **Chat Persistence**: Save/load chat sessions to disk (JSON/database)
+- **Search**: Search across all chats or within specific chat
+- **Export**: Export chat history to markdown/text/JSON
+- **Context Window Management**: Auto-truncate old messages when context limit approached
+- **Streaming Responses**: Support streaming API responses for real-time output
+- **Additional Clients**: OpenAI, Anthropic, Ollama, etc.
+- **Chat Tags/Categories**: Organize chats with tags or categories
+- **Usage Reports**: Aggregate token usage and costs across all chats
+- **Custom Commands**: User-defined command aliases or scripts
