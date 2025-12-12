@@ -1,6 +1,6 @@
 package org.example
 
-import createApp
+import factories.createApp
 import kotlinx.coroutines.runBlocking
 
 fun main() = runBlocking {
