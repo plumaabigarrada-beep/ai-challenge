@@ -1,7 +1,7 @@
 package com.jamycake.aiagent.terminal.commands
 
 import com.jamycake.aiagent.terminal.Command
-import org.example.Config
+import com.jamycake.aiagent.chat.Config
 
 internal class SetAutoCompressThresholdCommand(
     private val config: Config,

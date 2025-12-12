@@ -1,4 +1,4 @@
-package org.example.context
+package com.jamycake.aiagent.context
 
 import com.jamycake.aiagent.chat.ChatUsage
 

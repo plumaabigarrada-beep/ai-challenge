@@ -1,10 +1,10 @@
 package com.jamycake.aiagent.compressor
 
 import com.jamycake.aiagent.chat.ChatUsage
-import org.example.ClientType
-import org.example.context.Context
-import org.example.context.ContextMessage
-import org.example.contextsender.ContextSender
+import com.jamycake.aiagent.context.Context
+import com.jamycake.aiagent.context.ContextMessage
+import com.jamycake.aiagent.contextsender.ContextSender
+import com.jamycake.aiagent.chat.ClientType
 
 internal class ContextCompressor(
     private val contextSender: ContextSender,

@@ -7,8 +7,8 @@ import com.jamycake.aiagent.chatcontainer.ChatContainer
 import com.jamycake.aiagent.terminal.Command
 import com.jamycake.aiagent.chat.ContextWindowConfig
 import com.jamycake.aiagent.chat.CoreMessage
-import org.example.context.ContextMessage
-import org.example.contextsender.ContextSender
+import com.jamycake.aiagent.context.ContextMessage
+import com.jamycake.aiagent.contextsender.ContextSender
 
 internal class SendMessageCommand(
     private val chatContainer: ChatContainer,

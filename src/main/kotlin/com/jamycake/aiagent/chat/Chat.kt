@@ -1,9 +1,7 @@
 package com.jamycake.aiagent.chat
 
 import com.jamycake.aiagent.client.Client
-import org.example.ClientType
-import org.example.Config
-import org.example.context.Context
+import com.jamycake.aiagent.context.Context
 import java.util.*
 
 /**

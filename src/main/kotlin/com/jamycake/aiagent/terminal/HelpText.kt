@@ -1,4 +1,4 @@
-package org.example
+package com.jamycake.aiagent.terminal
 
 const val HELP_TEXT = """
 Available commands:

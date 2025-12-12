@@ -1,11 +1,8 @@
-package org.example
+package com.jamycake.aiagent.client.impl
 
 import com.jamycake.aiagent.chat.ChatUsage
-import com.jamycake.aiagent.client.ChatCompletionRequest
-import com.jamycake.aiagent.client.ChatCompletionResponse
-import com.jamycake.aiagent.client.Client
-import com.jamycake.aiagent.client.ResponseChatMessage
-import com.jamycake.aiagent.client.jsonParser
+import com.jamycake.aiagent.client.*
+import com.jamycake.aiagent.context.Context
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
@@ -14,10 +11,8 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
-import org.example.chat.ChatMessage
-import org.example.context.Context
+import com.jamycake.aiagent.chat.ChatMessage
 
-const val LMSTUDIO_API_URL = "http://localhost:1234/v1/chat/completions"
 
 internal class GeneralClient(
     val baseUrl: String,

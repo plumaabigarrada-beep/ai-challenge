@@ -1,7 +1,7 @@
 package com.jamycake.aiagent.client
 
-import org.example.chat.ChatMessage
-import org.example.context.Context
+import com.jamycake.aiagent.context.Context
+import com.jamycake.aiagent.chat.ChatMessage
 
 internal interface Client {
 

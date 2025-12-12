@@ -1,8 +1,7 @@
-package org.example
+package com.jamycake.aiagent.client
 
 import io.ktor.client.call.*
-import io.ktor.client.plugins.ClientRequestException
-import io.ktor.client.plugins.ServerResponseException
+import io.ktor.client.plugins.*
 import kotlinx.serialization.SerializationException
 
 suspend fun errorMessage(e: Exception, requestInfo: StringBuilder, additionalNote: String? = null): String {

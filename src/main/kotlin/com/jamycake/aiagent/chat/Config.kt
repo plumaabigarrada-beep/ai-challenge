@@ -1,4 +1,4 @@
-package org.example
+package com.jamycake.aiagent.chat
 
 enum class ClientType {
     PERPLEXITY,

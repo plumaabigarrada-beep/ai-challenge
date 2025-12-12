@@ -1,7 +1,7 @@
 package com.jamycake.aiagent.terminal.commands
 
 import com.jamycake.aiagent.terminal.Command
-import org.example.HELP_TEXT
+import com.jamycake.aiagent.terminal.HELP_TEXT
 
 internal class HelpCommand(
     values: List<String>

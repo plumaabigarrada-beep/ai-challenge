@@ -1,51 +1,51 @@
-package factories
+package com.jamycake.aiagent.factories
 
 import com.jamycake.aiagent.chatcontainer.ChatContainer
-import commands.*
 import com.jamycake.aiagent.terminal.Command
+import com.jamycake.aiagent.terminal.commands.*
 
 internal fun chatCommands(
-    sendMessageCommand: com.jamycake.aiagent.terminal.commands.SendMessageCommand,
+    sendMessageCommand: SendMessageCommand,
     chatContainer: ChatContainer,
-    compressContextCommand: com.jamycake.aiagent.terminal.commands.CompressContextCommand
+    compressContextCommand: CompressContextCommand
 ): List<Command> = listOf(
     sendMessageCommand,
     // Help command
-    _root_ide_package_.com.jamycake.aiagent.terminal.commands.HelpCommand(
+    HelpCommand(
         values = listOf("--help", "-h")
     ),
 
     // Chat management commands
-    _root_ide_package_.com.jamycake.aiagent.terminal.commands.CreateChatCommand(
+    CreateChatCommand(
         chatContainer = chatContainer,
         values = listOf("--newchat", "-nc")
     ),
-    _root_ide_package_.com.jamycake.aiagent.terminal.commands.DeleteChatCommand(
+    DeleteChatCommand(
         chatContainer = chatContainer,
         values = listOf("--deletechat", "-dc")
     ),
-    _root_ide_package_.com.jamycake.aiagent.terminal.commands.SwitchChatCommand(
+    SwitchChatCommand(
         chatContainer = chatContainer,
         values = listOf("--switchchat", "-sc")
     ),
-    _root_ide_package_.com.jamycake.aiagent.terminal.commands.ListChatsCommand(
+    ListChatsCommand(
         chatContainer = chatContainer,
         values = listOf("--chats", "-lc")
     ),
-    _root_ide_package_.com.jamycake.aiagent.terminal.commands.RenameChatCommand(
+    RenameChatCommand(
         chatContainer = chatContainer,
         values = listOf("--renamechat", "-rc")
     ),
-    _root_ide_package_.com.jamycake.aiagent.terminal.commands.ClearHistoryCommand(
+    ClearHistoryCommand(
         chatContainer = chatContainer,
         values = listOf("clear", "reset")
     ),
     compressContextCommand,
-    _root_ide_package_.com.jamycake.aiagent.terminal.commands.GetConfigCommand(
+    GetConfigCommand(
         chatContainer = chatContainer,
         values = listOf("--config", "-c")
     ),
-    _root_ide_package_.com.jamycake.aiagent.terminal.commands.GetContextCommand(
+    GetContextCommand(
         chatContainer = chatContainer,
         values = listOf("--context", "-ctx")
     ),

@@ -1,6 +1,4 @@
-package org.example.chat
-
-import com.jamycake.aiagent.chat.ChatUsage
+package com.jamycake.aiagent.chat
 
 data class ChatMessage(
     val role: String,

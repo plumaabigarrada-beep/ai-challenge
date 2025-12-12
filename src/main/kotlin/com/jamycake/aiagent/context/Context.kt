@@ -1,4 +1,4 @@
-package org.example.context
+package com.jamycake.aiagent.context
 
 internal data class Context(
     val messages: List<ContextMessage>,

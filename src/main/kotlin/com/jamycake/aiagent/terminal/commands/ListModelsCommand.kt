@@ -1,9 +1,9 @@
 package com.jamycake.aiagent.terminal.commands
 
 import com.jamycake.aiagent.client.Client
-import org.example.ClientType
+import com.jamycake.aiagent.chat.ClientType
 import com.jamycake.aiagent.terminal.Command
-import org.example.Config
+import com.jamycake.aiagent.chat.Config
 
 internal class ListModelsCommand(
     private val config: Config,

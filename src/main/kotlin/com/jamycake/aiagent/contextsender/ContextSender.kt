@@ -1,9 +1,9 @@
-package org.example.contextsender
+package com.jamycake.aiagent.contextsender
 
 import com.jamycake.aiagent.client.Client
-import org.example.ClientType
-import org.example.chat.ChatMessage
-import org.example.context.Context
+import com.jamycake.aiagent.chat.ClientType
+import com.jamycake.aiagent.chat.ChatMessage
+import com.jamycake.aiagent.context.Context
 
 internal class ContextSender(
     private val clients: Map<ClientType, Client>,

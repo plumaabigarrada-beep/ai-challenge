@@ -2,8 +2,8 @@ package com.jamycake.aiagent.chatcontainer
 
 import com.jamycake.aiagent.chat.Chat
 import com.jamycake.aiagent.client.Client
-import org.example.ClientType
-import org.example.Config
+import com.jamycake.aiagent.chat.ClientType
+import com.jamycake.aiagent.chat.Config
 
 /**
  * ChatContainer data container.

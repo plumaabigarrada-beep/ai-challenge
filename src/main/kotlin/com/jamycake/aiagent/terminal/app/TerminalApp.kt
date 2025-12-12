@@ -3,7 +3,7 @@ package com.jamycake.aiagent.terminal.app
 import com.jamycake.aiagent.chatcontainer.ChatContainer
 import com.jamycake.aiagent.client.Client
 import com.jamycake.aiagent.terminal.commands.SendMessageCommand
-import org.example.ClientType
+import com.jamycake.aiagent.chat.ClientType
 import com.jamycake.aiagent.terminal.Command
 
 internal class TerminalApp(

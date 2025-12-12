@@ -1,8 +1,8 @@
-package org.example
+package com.jamycake.aiagent
 
+import com.jamycake.aiagent.factories.createApp
 import com.jamycake.aiagent.terminal.Colors
 import com.jamycake.aiagent.terminal.Command
-import factories.createApp
 import kotlinx.coroutines.runBlocking
 
 fun main() = runBlocking {

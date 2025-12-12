@@ -3,7 +3,7 @@ package com.jamycake.aiagent.terminal.commands
 import com.jamycake.aiagent.chat.Chat
 import com.jamycake.aiagent.chatcontainer.ChatContainer
 import com.jamycake.aiagent.terminal.Command
-import org.example.context.Context
+import com.jamycake.aiagent.context.Context
 
 internal class CreateChatCommand(
     private val chatContainer: ChatContainer,

@@ -4,7 +4,7 @@ import com.jamycake.aiagent.chat.Chat
 import com.jamycake.aiagent.chatcontainer.ChatContainer
 import com.jamycake.aiagent.terminal.Command
 import com.jamycake.aiagent.chat.CoreMessage
-import org.example.context.Context
+import com.jamycake.aiagent.context.Context
 
 internal class ClearHistoryCommand(
     private val chatContainer: ChatContainer,
