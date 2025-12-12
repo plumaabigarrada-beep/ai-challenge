@@ -1,19 +1,18 @@
 package factories
 
-import chat.Chat
-import chatcontainer.ChatContainer
-import chatsaver.ChatSaver
-import commands.SendMessageCommand
-import compressor.COMPRESS_PTOMPT
-import compressor.ContextCompressor
-import org.example.App
+import com.jamycake.aiagent.chat.Chat
+import com.jamycake.aiagent.chatcontainer.ChatContainer
+import com.jamycake.aiagent.chatsaver.ChatSaver
+import com.jamycake.aiagent.compressor.COMPRESS_PTOMPT
+import com.jamycake.aiagent.compressor.ContextCompressor
+import com.jamycake.aiagent.terminal.app.TerminalApp
 import org.example.ClientType
 import org.example.Config
 import org.example.GeneralClient
 import org.example.context.Context
 import org.example.contextsender.ContextSender
 
-internal fun createApp() : App {
+internal fun createApp() : TerminalApp {
 
     val perplexityClient = GeneralClient(baseUrl = "https://api.perplexity.ai/chat/completions")
     val huggingFaceClient = GeneralClient(baseUrl = "https://router.huggingface.co/v1/chat/completions")
@@ -54,21 +53,27 @@ internal fun createApp() : App {
         defaultConfig = config,
     )
 
-
-    val sendMessageCommand = SendMessageCommand(
+    val compressContextCommand = _root_ide_package_.com.jamycake.aiagent.terminal.commands.CompressContextCommand(
         chatContainer = chatContainer,
         contextCompressor = compressor,
-        contextSender = contextSender,
-        values = listOf("--send")
+        values = listOf("--compress", "-cp")
     )
 
-    val chatCommands = chatCommands(sendMessageCommand, chatContainer, compressor)
+
+    val sendMessageCommand = _root_ide_package_.com.jamycake.aiagent.terminal.commands.SendMessageCommand(
+        chatContainer = chatContainer,
+        contextSender = contextSender,
+        values = listOf("--send"),
+        compressContextCommand = compressContextCommand,
+    )
+
+    val chatCommands = chatCommands(sendMessageCommand, chatContainer, compressContextCommand)
     val configurationCommands = getConfigurationCommands(config, clients)
     val fileCommands = getFileCommands(chatContainer, chatSaver, sendMessageCommand)
 
     val commands = chatCommands + configurationCommands + fileCommands
 
-    return App(
+    return TerminalApp(
         clients = clients,
         commands = commands,
         chatContainer = chatContainer,

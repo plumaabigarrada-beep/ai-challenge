@@ -1,5 +1,7 @@
 package org.example
 
+import com.jamycake.aiagent.terminal.Colors
+import com.jamycake.aiagent.terminal.Command
 import factories.createApp
 import kotlinx.coroutines.runBlocking
 

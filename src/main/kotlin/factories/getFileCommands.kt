@@ -1,24 +1,24 @@
 package factories
 
-import chatcontainer.ChatContainer
-import chatsaver.ChatSaver
-import commands.ReadAndSendFileCommand
-import commands.SaveChatCommand
-import commands.SendMessageCommand
-import org.example.Command
+import com.jamycake.aiagent.chatcontainer.ChatContainer
+import com.jamycake.aiagent.chatsaver.ChatSaver
+import com.jamycake.aiagent.terminal.commands.ReadAndSendFileCommand
+import com.jamycake.aiagent.terminal.commands.SaveChatCommand
+import com.jamycake.aiagent.terminal.commands.SendMessageCommand
+import com.jamycake.aiagent.terminal.Command
 
 internal fun getFileCommands(
     chatContainer: ChatContainer,
     chatSaver: ChatSaver,
-    sendMessageCommand: SendMessageCommand
+    sendMessageCommand: com.jamycake.aiagent.terminal.commands.SendMessageCommand
 ): List<Command> = listOf(
     // File and message commands
-    ReadAndSendFileCommand(
+    _root_ide_package_.com.jamycake.aiagent.terminal.commands.ReadAndSendFileCommand(
         chatContainer = chatContainer,
         sendMessageCommand = sendMessageCommand,
         values = listOf("--file", "-f")
     ),
-    SaveChatCommand(
+    _root_ide_package_.com.jamycake.aiagent.terminal.commands.SaveChatCommand(
         chatContainer = chatContainer,
         chatSaver = chatSaver,
         values = listOf("--save", "-s")
