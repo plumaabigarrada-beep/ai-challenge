@@ -1,18 +1,20 @@
 package org.example.contextsender
 
+import client.Client
+import org.example.ClientType
 import org.example.chat.ChatMessage
 import org.example.context.Context
-import client.Client
 
 internal class ContextSender(
-    private val client: Client,
+    private val clients: Map<ClientType, Client>,
 ) {
 
     suspend fun sendContext(
         context: Context,
         temperature: Double,
-        model: String
+        model: String,
+        clientType: ClientType,
     ): Pair<Context, ChatMessage> {
-        return client.sendContext(context, temperature, model)
+        return clients[clientType]?.sendContext(context, temperature, model) ?: throw IllegalStateException("Client $clientType not found")
     }
 }

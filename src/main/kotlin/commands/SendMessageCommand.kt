@@ -4,19 +4,17 @@ import chat.Chat
 import chat.ChatStats
 import chat.ChatUsage
 import chatcontainer.ChatContainer
-import client.Client
 import compressor.ContextCompressor
-import org.example.ClientType
 import org.example.Command
 import org.example.ContextWindowConfig
 import org.example.CoreMessage
-import org.example.context.Context
 import org.example.context.ContextMessage
 import org.example.contextsender.ContextSender
 
 internal class SendMessageCommand(
     private val chatContainer: ChatContainer,
     private val contextCompressor: ContextCompressor,
+    private val contextSender: ContextSender,
     values: List<String>
 ) : Command(values) {
     override suspend fun execute(args: String?): String {
@@ -41,21 +39,21 @@ internal class SendMessageCommand(
         chat.conversationHistory.add(CoreMessage(role = "user", content = text))
 
         // Build Context from conversation history
-        val contextMessages = buildContextMessages(chat)
-        val context = Context(messages = contextMessages)
+        val newContext = chat.context.copy(
+            messages = chat.context.messages + ContextMessage(role = "user", content = text),
+        )
 
-        // Get the appropriate client and create ContextSender
-        val client = getClient(chat)
-        val contextSender = ContextSender(client)
+        chat.context = newContext
 
         // Measure response time
         val startTime = System.currentTimeMillis()
 
         // Send context via ContextSender and receive response
         val (responseContext, chatMessage) = contextSender.sendContext(
-            context = context,
+            context = newContext,
             temperature = chat.config.temperature,
-            model = chat.config.model
+            model = chat.config.model,
+            clientType = chat.config.clientType,
         )
 
         val duration = System.currentTimeMillis() - startTime
@@ -101,22 +99,6 @@ internal class SendMessageCommand(
         }
     }
 
-    private fun buildContextMessages(chat: Chat): List<ContextMessage> {
-        val messages = mutableListOf<ContextMessage>()
-
-        // Add system prompt if present
-        if (chat.config.systemPrompt.isNotEmpty()) {
-            messages.add(ContextMessage(role = "system", content = chat.config.systemPrompt))
-        }
-
-        // Add conversation history
-        chat.conversationHistory.forEach { coreMessage ->
-            messages.add(ContextMessage(role = coreMessage.role, content = coreMessage.content))
-        }
-
-        return messages
-    }
-
     private suspend fun checkAndAutoCompress(chat: Chat): String? {
         if (!chat.config.autoCompressEnabled) {
             return null
@@ -128,7 +110,11 @@ internal class SendMessageCommand(
 
         if (stats.totalTokens >= threshold) {
             // Auto-compress the chat context
-            val (compressedContext, usage) = contextCompressor.compress(chat.context)
+            val (compressedContext, usage) = contextCompressor.compress(
+                context = chat.context,
+                clientType = chat.config.clientType,
+                model = chat.config.model
+            )
 
             // Update chat with compressed context
             chat.context = compressedContext
@@ -191,11 +177,5 @@ internal class SendMessageCommand(
             append(String.format("%.2fs", seconds))
         }
         append("]")
-    }
-
-    private fun getClient(chat: Chat): Client = when (chat.config.clientType) {
-        ClientType.PERPLEXITY -> chat.clients[ClientType.PERPLEXITY]!!
-        ClientType.HUGGINGFACE -> chat.clients[ClientType.HUGGINGFACE]!!
-        ClientType.LMSTUDIO -> chat.clients[ClientType.LMSTUDIO]!!
     }
 }

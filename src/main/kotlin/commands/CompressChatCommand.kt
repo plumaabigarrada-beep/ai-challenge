@@ -16,7 +16,11 @@ internal class CompressChatCommand(
 
         return try {
             // Compress the chat context
-            val (compressedContext, usage) = contextCompressor.compress(currentChat.context)
+            val (compressedContext, usage) = contextCompressor.compress(
+                context = currentChat.context,
+                clientType = currentChat.config.clientType,
+                model = currentChat.config.model
+            )
 
             // Update chat with compressed context
             currentChat.context = compressedContext

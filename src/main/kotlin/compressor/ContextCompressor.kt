@@ -1,17 +1,23 @@
 package compressor
 
 import chat.ChatUsage
-import client.Client
+import org.example.ClientType
 import org.example.context.Context
 import org.example.context.ContextMessage
 import org.example.contextsender.ContextSender
 
 internal class ContextCompressor(
-    private val client: Client,
+    private val contextSender: ContextSender,
     private val compressPrompt: String,
+    private val defaultClientType: ClientType,
+    private val defaultModel: String,
 ) {
 
-    suspend fun compress(context: Context): Pair<Context, ChatUsage?> {
+    suspend fun compress(
+        context: Context,
+        clientType: ClientType = defaultClientType,
+        model: String = defaultModel
+    ): Pair<Context, ChatUsage?> {
         // Get the current conversation history
         val currentHistory = context.messages
 
@@ -39,11 +45,11 @@ internal class ContextCompressor(
 
         // Send to AI to compress via ContextSender
         val (compressedSummary, usage) = try {
-            val contextSender = ContextSender(client)
             val (responseContext, chatMessage) = contextSender.sendContext(
                 context = compressionContext,
                 temperature = 0.3, // Lower temperature for more consistent compression
-                model = client.models().first() // Use the first available model
+                model = model,
+                clientType = clientType
             )
             Pair(chatMessage.message, chatMessage.usage)
         } catch (e: Exception) {

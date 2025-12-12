@@ -11,6 +11,7 @@ import org.example.ClientType
 import org.example.Config
 import org.example.GeneralClient
 import org.example.context.Context
+import org.example.contextsender.ContextSender
 
 internal fun createApp() : App {
 
@@ -24,15 +25,20 @@ internal fun createApp() : App {
         ClientType.HUGGINGFACE to huggingFaceClient,
     )
 
-    val compressor = ContextCompressor(
-        client = lmstudioClient,
-        compressPrompt = COMPRESS_PTOMPT,
-    )
-
     val chatSaver = ChatSaver()
 
     val config = Config(
         model = lmstudioClient.models().first()
+    )
+
+    // Create ContextSender with all clients
+    val contextSender = ContextSender(clients = clients)
+
+    val compressor = ContextCompressor(
+        contextSender = contextSender,
+        compressPrompt = COMPRESS_PTOMPT,
+        defaultClientType = ClientType.LMSTUDIO,
+        defaultModel = config.model,
     )
 
     val defaultChat = Chat(
@@ -52,6 +58,7 @@ internal fun createApp() : App {
     val sendMessageCommand = SendMessageCommand(
         chatContainer = chatContainer,
         contextCompressor = compressor,
+        contextSender = contextSender,
         values = listOf("--send")
     )
 
