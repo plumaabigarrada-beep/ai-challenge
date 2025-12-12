@@ -3,7 +3,7 @@ package commands
 import chatcontainer.ChatContainer
 import org.example.Command
 
-class ListChatsCommand(
+internal class ListChatsCommand(
     private val chatContainer: ChatContainer,
     values: List<String>
 ) : Command(values) {

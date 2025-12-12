@@ -4,8 +4,9 @@ import chatcontainer.ChatContainer
 import org.example.Colors
 import org.example.Command
 
-class ReadAndSendFileCommand(
+internal class ReadAndSendFileCommand(
     private val chatContainer: ChatContainer,
+    private val sendMessageCommand: SendMessageCommand,
     values: List<String>
 ) : Command(values) {
     override suspend fun execute(args: String?): String {
@@ -51,8 +52,8 @@ class ReadAndSendFileCommand(
                 appendLine("${Colors.USER}$preview${Colors.RESET}\n")
                 appendLine("${Colors.INFO}Sending to AI...${Colors.RESET}\n")
 
-                // Send to AI and get response
-                val response = currentChat.sendMessage(content)
+                // Send to AI and get response via SendMessageCommand
+                val response = sendMessageCommand.execute(content)
                 appendLine("${Colors.ASSISTANT}${Colors.BOLD}Assistant:${Colors.RESET} ${Colors.ASSISTANT}$response${Colors.RESET}\n")
             }
 

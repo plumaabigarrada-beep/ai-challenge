@@ -5,7 +5,7 @@ import org.example.ClientType
 import org.example.Command
 import org.example.Config
 
-class SetClientCommand(
+internal class SetClientCommand(
     private val config: Config,
     private val clients: Map<ClientType, Client>,
     values: List<String>

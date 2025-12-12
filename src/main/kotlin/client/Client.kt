@@ -1,14 +1,15 @@
 package client
 
-import org.example.CoreMessage
+import org.example.chat.ChatMessage
+import org.example.context.Context
 
-interface Client {
+internal interface Client {
 
-    suspend fun sendMessage(
-        conversationHistory: List<CoreMessage>,
+    suspend fun sendContext(
+        context: Context,
         temperature: Double,
         model: String,
-    ) : CoreClientResponse
+    ) : Pair<Context, ChatMessage>
 
     fun models() : List<String>
 

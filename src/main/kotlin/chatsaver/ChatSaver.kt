@@ -2,14 +2,13 @@ package chatsaver
 
 import chat.Chat
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
-import org.example.CoreMessage
+import kotlinx.serialization.json.Json
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class ChatSaver {
+internal class ChatSaver {
 
     private val json = Json {
         prettyPrint = true

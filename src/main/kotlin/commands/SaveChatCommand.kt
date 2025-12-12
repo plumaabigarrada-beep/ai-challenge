@@ -4,7 +4,7 @@ import chatcontainer.ChatContainer
 import chatsaver.ChatSaver
 import org.example.Command
 
-class SaveChatCommand(
+internal class SaveChatCommand(
     private val chatContainer: ChatContainer,
     private val chatSaver: ChatSaver,
     values: List<String>

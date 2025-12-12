@@ -2,10 +2,9 @@ package commands
 
 import chatcontainer.ChatContainer
 import org.example.Command
-import org.example.Config
 import org.example.ContextWindowConfig
 
-class GetConfigCommand(
+internal class GetConfigCommand(
     private val chatContainer: ChatContainer,
     values: List<String>
 ) : Command(values) {

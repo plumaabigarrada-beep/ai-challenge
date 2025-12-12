@@ -15,7 +15,7 @@ val jsonParser = Json {
  * Chat message in OpenAI format (role + content)
  */
 @Serializable
-data class ChatMessage(
+data class ResponseChatMessage(
     val role: String,
     val content: String
 )
@@ -26,7 +26,7 @@ data class ChatMessage(
 @Serializable
 data class ChatCompletionRequest(
     val model: String,
-    val messages: List<ChatMessage>,
+    val messages: List<ResponseChatMessage>,
     val temperature: Double? = null,
     val stream: Boolean = false
 )
@@ -36,7 +36,7 @@ data class ChatCompletionRequest(
  */
 @Serializable
 data class ChatChoice(
-    val message: ChatMessage,
+    val message: ResponseChatMessage,
     val index: Int? = null,
     val finish_reason: String? = null
 )
@@ -45,7 +45,7 @@ data class ChatChoice(
  * Token usage information
  */
 @Serializable
-data class ChatUsage(
+data class ResponseChatUsage(
     val prompt_tokens: Int? = null,
     val completion_tokens: Int? = null,
     val total_tokens: Int? = null
@@ -57,7 +57,7 @@ data class ChatUsage(
 @Serializable
 data class ChatCompletionResponse(
     val choices: List<ChatChoice>,
-    val usage: ChatUsage? = null,
+    val usage: ResponseChatUsage? = null,
     val id: String? = null,
     val model: String? = null,
     val created: Long? = null

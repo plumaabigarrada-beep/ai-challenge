@@ -3,7 +3,7 @@ package commands
 import org.example.Command
 import org.example.Config
 
-class ToggleAutoCompressCommand(
+internal class ToggleAutoCompressCommand(
     private val config: Config,
     values: List<String>
 ) : Command(values) {

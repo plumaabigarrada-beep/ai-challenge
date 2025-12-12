@@ -5,57 +5,59 @@ import chatcontainer.ChatContainer
 import chatsaver.ChatSaver
 import commands.SendMessageCommand
 import compressor.COMPRESS_PTOMPT
-import compressor.ChatCompressor
-import org.example.*
+import compressor.ContextCompressor
+import org.example.App
+import org.example.ClientType
+import org.example.Config
+import org.example.GeneralClient
+import org.example.context.Context
 
-fun createApp() : App {
+internal fun createApp() : App {
 
-    val perplexityClient = PerplexityClient()
-    val huggingFaceClient = HuggingFaceClient()
-    val lmStudioClient = LMStudioClient()
+    val perplexityClient = GeneralClient(baseUrl = "https://api.perplexity.ai/chat/completions")
+    val huggingFaceClient = GeneralClient(baseUrl = "https://router.huggingface.co/v1/chat/completions")
+    val lmstudioClient = GeneralClient(baseUrl = "http://localhost:1234/v1/chat/completions")
 
     val clients = mapOf(
-        ClientType.LMSTUDIO to lmStudioClient,
+        ClientType.LMSTUDIO to lmstudioClient,
         ClientType.PERPLEXITY to perplexityClient,
         ClientType.HUGGINGFACE to huggingFaceClient,
     )
 
-    val compressor = ChatCompressor(
-        client = lmStudioClient,
+    val compressor = ContextCompressor(
+        client = lmstudioClient,
         compressPrompt = COMPRESS_PTOMPT,
     )
 
     val chatSaver = ChatSaver()
 
     val config = Config(
-        model = lmStudioClient.models().first()
+        model = lmstudioClient.models().first()
     )
 
     val defaultChat = Chat(
         clients = clients,
         config = config,
-        chatCompressor = compressor,
-        saver = chatSaver
+        context = Context(messages = emptyList()),
     )
 
     val chatContainer = ChatContainer(
         chats = mutableMapOf(defaultChat.id to defaultChat),
         clients = clients,
         currentChatId = defaultChat.id,
-        chatCompressor = compressor,
         defaultConfig = config,
-        chatSaver = chatSaver,
     )
 
 
     val sendMessageCommand = SendMessageCommand(
         chatContainer = chatContainer,
+        contextCompressor = compressor,
         values = listOf("--send")
     )
 
     val chatCommands = chatCommands(sendMessageCommand, chatContainer, compressor)
     val configurationCommands = getConfigurationCommands(config, clients)
-    val fileCommands = getFileCommands(chatContainer, chatSaver)
+    val fileCommands = getFileCommands(chatContainer, chatSaver, sendMessageCommand)
 
     val commands = chatCommands + configurationCommands + fileCommands
 

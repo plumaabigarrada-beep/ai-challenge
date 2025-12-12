@@ -3,7 +3,7 @@ package commands
 import org.example.Command
 import org.example.Config
 
-class ToggleShowTokensCommand(
+internal class ToggleShowTokensCommand(
     private val config: Config,
     values: List<String>
 ) : Command(values) {

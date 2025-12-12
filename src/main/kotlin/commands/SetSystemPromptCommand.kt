@@ -3,7 +3,7 @@ package commands
 import org.example.Command
 import org.example.Config
 
-class SetSystemPromptCommand(
+internal class SetSystemPromptCommand(
     private val config: Config,
     values: List<String>
 ) : Command(values) {

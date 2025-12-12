@@ -2,19 +2,29 @@ package commands
 
 import chat.Chat
 import chatcontainer.ChatContainer
-import client.Client
-import compressor.ChatCompressor
-import org.example.ClientType
 import org.example.Command
-import org.example.Config
-import java.time.chrono.JapaneseEra.values
+import org.example.context.Context
 
-class CreateChatCommand(
+internal class CreateChatCommand(
     private val chatContainer: ChatContainer,
     values: List<String>
 ) : Command(values) {
     override suspend fun execute(args: String?): String {
-        val newChat = chatContainer.newChat(args)
+        val newChat = newChat(chatContainer, args)
         return "Created and switched to new chat: ${newChat.name}\n"
+    }
+
+    private fun newChat(container: ChatContainer, name: String?): Chat {
+        val newChat = Chat(
+            name = name ?: "Chat ${container.chats.size + 1}",
+            clients = container.clients,
+            config = container.defaultConfig.copy(),
+            context = Context(messages = emptyList()),
+        )
+
+        container.currentChatId = newChat.id
+        container.chats[newChat.id] = newChat
+
+        return newChat
     }
 }

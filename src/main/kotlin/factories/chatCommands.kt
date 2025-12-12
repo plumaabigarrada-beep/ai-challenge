@@ -2,13 +2,13 @@ package factories
 
 import chatcontainer.ChatContainer
 import commands.*
-import compressor.ChatCompressor
+import compressor.ContextCompressor
 import org.example.Command
 
 internal fun chatCommands(
     sendMessageCommand: SendMessageCommand,
     chatContainer: ChatContainer,
-    compressor: ChatCompressor
+    compressor: ContextCompressor
 ): List<Command> = listOf(
     sendMessageCommand,
     // Help command
@@ -43,7 +43,7 @@ internal fun chatCommands(
     ),
     CompressChatCommand(
         chatContainer = chatContainer,
-        chatCompressor = compressor,
+        contextCompressor = compressor,
         values = listOf("--compress", "-cp")
     ),
     GetConfigCommand(
