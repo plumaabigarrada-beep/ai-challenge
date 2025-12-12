@@ -1,16 +1,16 @@
 package com.jamycake.aiagent.factories
 
 import com.jamycake.aiagent.chat.Chat
-import com.jamycake.aiagent.chatcontainer.ChatContainer
-import com.jamycake.aiagent.chatsaver.ChatSaver
-import com.jamycake.aiagent.compressor.COMPRESS_PTOMPT
-import com.jamycake.aiagent.compressor.ContextCompressor
-import com.jamycake.aiagent.terminal.app.TerminalApp
 import com.jamycake.aiagent.chat.ClientType
 import com.jamycake.aiagent.chat.Config
+import com.jamycake.aiagent.chatcontainer.ChatContainer
+import com.jamycake.aiagent.chatsaver.ChatSaver
 import com.jamycake.aiagent.client.impl.GeneralClient
+import com.jamycake.aiagent.compressor.COMPRESS_PTOMPT
+import com.jamycake.aiagent.compressor.ContextCompressor
 import com.jamycake.aiagent.context.Context
 import com.jamycake.aiagent.contextsender.ContextSender
+import com.jamycake.aiagent.terminal.app.TerminalApp
 
 internal fun createApp() : TerminalApp {
 
@@ -41,7 +41,6 @@ internal fun createApp() : TerminalApp {
     )
 
     val defaultChat = Chat(
-        clients = clients,
         config = config,
         context = Context(messages = emptyList()),
     )

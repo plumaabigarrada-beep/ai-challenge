@@ -1,6 +1,5 @@
 package com.jamycake.aiagent.chat
 
-import com.jamycake.aiagent.client.Client
 import com.jamycake.aiagent.context.Context
 import java.util.*
 
@@ -11,7 +10,6 @@ import java.util.*
 internal class Chat(
     val id: String = UUID.randomUUID().toString(),
     var name: String = "Chat ${id.take(8)}",
-    internal val clients: Map<ClientType, Client>,
     val config: Config,
     var context: Context,
 ) {

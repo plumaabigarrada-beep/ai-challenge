@@ -2,8 +2,8 @@ package com.jamycake.aiagent.terminal.commands
 
 import com.jamycake.aiagent.chat.Chat
 import com.jamycake.aiagent.chatcontainer.ChatContainer
-import com.jamycake.aiagent.terminal.Command
 import com.jamycake.aiagent.context.Context
+import com.jamycake.aiagent.terminal.Command
 
 internal class CreateChatCommand(
     private val chatContainer: ChatContainer,
@@ -17,7 +17,6 @@ internal class CreateChatCommand(
     private fun newChat(container: ChatContainer, name: String?): Chat {
         val newChat = Chat(
             name = name ?: "Chat ${container.chats.size + 1}",
-            clients = container.clients,
             config = container.defaultConfig.copy(),
             context = Context(messages = emptyList()),
         )
