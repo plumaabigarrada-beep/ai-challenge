@@ -45,7 +45,7 @@ internal class ContextCompressor(
 
         // Send to AI to compress via ContextSender
         val (compressedSummary, usage) = try {
-            val (responseContext, chatMessage) = contextSender.sendContext(
+            val chatMessage = contextSender.sendContext(
                 context = compressionContext,
                 temperature = 0.3, // Lower temperature for more consistent compression
                 model = model,
@@ -58,7 +58,7 @@ internal class ContextCompressor(
         }
 
         // If compression failed, return original context
-        if (compressedSummary.isNullOrEmpty()) {
+        if (compressedSummary.isEmpty()) {
             return Pair(context, null)
         }
 

@@ -11,7 +11,6 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import org.example.chat.ChatMessage
 import org.example.context.Context
-import org.example.context.ContextMessage
 
 const val LMSTUDIO_API_URL = "http://localhost:1234/v1/chat/completions"
 
@@ -33,7 +32,7 @@ internal class GeneralClient(
         context: Context,
         temperature: Double,
         model: String,
-    ): Pair<Context, ChatMessage> {
+    ): ChatMessage {
         // Convert ContextMessage to ResponseChatMessage
         val messages = context.messages.map {
             ResponseChatMessage(role = it.role, content = it.content)
@@ -53,17 +52,6 @@ internal class GeneralClient(
         val responseBody = httpResponse.body<String>()
         val response: ChatCompletionResponse = jsonParser.decodeFromString(responseBody)
 
-        // Extract AI response messages as ContextMessages
-        val newContextMessages = response.choices.map {
-            ContextMessage(
-                role = it.message.role,
-                content = it.message.content
-            )
-        }
-
-        val responseContext = Context(
-            messages = newContextMessages,
-        )
 
         // Get the first choice's message and usage
         val firstChoice = response.choices.firstOrNull()
@@ -83,7 +71,7 @@ internal class GeneralClient(
             ChatMessage(role = "assistant", message = "", usage = null)
         }
 
-        return Pair(responseContext, chatMessage)
+        return chatMessage
     }
 
     override fun models(): List<String> {

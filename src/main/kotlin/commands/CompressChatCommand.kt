@@ -25,8 +25,6 @@ internal class CompressChatCommand(
             // Update chat with compressed context
             currentChat.context = compressedContext
 
-            // Clear conversation history and add compression summary
-            currentChat.conversationHistory.clear()
             if (compressedContext.messages.isNotEmpty()) {
                 val summaryMessage = compressedContext.messages.first()
                 currentChat.conversationHistory.add(

@@ -49,7 +49,7 @@ internal class SendMessageCommand(
         val startTime = System.currentTimeMillis()
 
         // Send context via ContextSender and receive response
-        val (responseContext, chatMessage) = contextSender.sendContext(
+        val chatMessage = contextSender.sendContext(
             context = newContext,
             temperature = chat.config.temperature,
             model = chat.config.model,
@@ -59,7 +59,10 @@ internal class SendMessageCommand(
         val duration = System.currentTimeMillis() - startTime
 
         // Update chat context with received context
-        chat.context = responseContext
+        chat.context = chat.context.copy(
+            messages = chat.context.messages + ContextMessage(role = chatMessage.role, content = chatMessage.message),
+        )
+
 
         if (chatMessage.message.isNotEmpty()) {
             // Update the last user message with prompt tokens from usage
@@ -119,8 +122,6 @@ internal class SendMessageCommand(
             // Update chat with compressed context
             chat.context = compressedContext
 
-            // Clear conversation history and add compression summary
-            chat.conversationHistory.clear()
             if (compressedContext.messages.isNotEmpty()) {
                 val summaryMessage = compressedContext.messages.first()
                 chat.conversationHistory.add(

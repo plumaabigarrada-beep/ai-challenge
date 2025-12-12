@@ -50,4 +50,8 @@ internal fun chatCommands(
         chatContainer = chatContainer,
         values = listOf("--config", "-c")
     ),
+    GetContextCommand(
+        chatContainer = chatContainer,
+        values = listOf("--context", "-ctx")
+    ),
 )

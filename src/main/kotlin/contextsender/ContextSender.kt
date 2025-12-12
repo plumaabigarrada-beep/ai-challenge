@@ -14,7 +14,7 @@ internal class ContextSender(
         temperature: Double,
         model: String,
         clientType: ClientType,
-    ): Pair<Context, ChatMessage> {
+    ): ChatMessage{
         return clients[clientType]?.sendContext(context, temperature, model) ?: throw IllegalStateException("Client $clientType not found")
     }
 }

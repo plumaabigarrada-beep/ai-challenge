@@ -9,7 +9,7 @@ internal interface Client {
         context: Context,
         temperature: Double,
         model: String,
-    ) : Pair<Context, ChatMessage>
+    ) : ChatMessage
 
     fun models() : List<String>
 
