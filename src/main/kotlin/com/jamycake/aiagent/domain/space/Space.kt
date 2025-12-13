@@ -44,6 +44,10 @@ internal class Space(
         chats[chat.id] = chat
     }
 
+    fun addChats(chats: Collection<Chat>) {
+        chats.forEach { this.chats[it.id] = it }
+    }
+
     fun getChat(id: ChatId) : Chat?{
         return chats[id]
     }

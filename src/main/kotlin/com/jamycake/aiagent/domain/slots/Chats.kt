@@ -8,4 +8,8 @@ internal interface Chats {
 
     suspend fun saveChat(chat: Chat)
 
+    suspend fun getAllChats(): List<Chat>
+
+    suspend fun newChat(): Chat
+
 }

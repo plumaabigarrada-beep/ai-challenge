@@ -8,7 +8,7 @@ import com.jamycake.aiagent.domain.space.Space
 import com.jamycake.aiagent.terminal.Command
 
 
-internal class RestoreAgentCommand(
+internal class RestoreAppStateCommand(
     private val agents: Agents,
     private val chats: Chats,
     private val users: Users,
@@ -18,8 +18,8 @@ internal class RestoreAgentCommand(
 
 
     override suspend fun execute(args: String?) {
-        val agents = this@RestoreAgentCommand.agents.get()
-        val chat = chats.getChat()
+        val agents = this@RestoreAppStateCommand.agents.get()
+        val chat = chats.getAllChats()
         val user = users.get()
 
 
@@ -31,7 +31,7 @@ internal class RestoreAgentCommand(
             space.addAgent(it)
         }
 
-        space.addChat(chat)
+        space.addChats(chat)
         space.addUser(user)
 
         space.wire()

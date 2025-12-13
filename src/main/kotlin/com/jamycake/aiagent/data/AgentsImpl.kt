@@ -90,7 +90,7 @@ internal class AgentsImpl(
 
         val savedData = SavedAgentData(
             id = agent.id.value,
-            chatMemberId = agent.chatMemberId.value,
+            chatMemberId = agent.chatMemberId?.value.orEmpty(),
             state = savedState
         )
 

@@ -1,7 +1,5 @@
 package com.jamycake.aiagent.app.commands.space
 
-import com.jamycake.aiagent.app.commands.space.ListAgentsCommand
-import com.jamycake.aiagent.app.commands.space.ListChatsCommand
 import com.jamycake.aiagent.domain.slots.Agents
 import com.jamycake.aiagent.domain.slots.Chats
 import com.jamycake.aiagent.domain.slots.UI
@@ -17,7 +15,7 @@ internal fun spaceCommands(
     terminalUI: UI
 ) : List<Command> {
     return listOf(
-        RestoreAgentCommand(
+        RestoreAppStateCommand(
             agents,
             chats,
             users,
@@ -41,6 +39,16 @@ internal fun spaceCommands(
             allAgents = space::allAgents,
             allChats = space::allChats,
             space = space,
+            ui = terminalUI
+        ),
+        CreateChatCommand(
+            chats = chats,
+            space = space,
+            ui = terminalUI
+        ),
+        SaveChatCommand(
+            chats = chats,
+            allChats = space::allChats,
             ui = terminalUI
         )
     )

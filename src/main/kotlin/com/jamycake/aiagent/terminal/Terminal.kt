@@ -1,6 +1,6 @@
 package com.jamycake.aiagent.terminal
 
-import com.jamycake.aiagent.app.commands.space.RestoreAgentCommand
+import com.jamycake.aiagent.app.commands.space.RestoreAppStateCommand
 
 internal class Terminal(
     private val onNoCommands: suspend (input: String) -> Unit,
@@ -9,7 +9,7 @@ internal class Terminal(
 
     suspend fun run() {
 
-        val command = commands.find { it.matches(RestoreAgentCommand.name) }
+        val command = commands.find { it.matches(RestoreAppStateCommand.name) }
 
         command?.let { command.execute("") }
 

@@ -5,7 +5,8 @@ internal class Chat(
     messages: List<ChatMessage> = emptyList()
 ) {
 
-    private val messages = messages.toMutableList()
+    private val _messages = messages.toMutableList()
+    val messages: List<ChatMessage> get() = _messages.toList()
 
     private val members: MutableMap<ChatMemberId, suspend (ChatMessage) -> Unit> = mutableMapOf()
 
@@ -19,7 +20,7 @@ internal class Chat(
     }
 
     suspend fun sendMessage(senderId: ChatMemberId, message: ChatMessage) {
-        messages.add(message)
+        _messages.add(message)
         members.forEach { (memberId, function) ->
             if (memberId != senderId) {
                 function.invoke(message)
