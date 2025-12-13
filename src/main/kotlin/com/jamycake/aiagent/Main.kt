@@ -1,5 +1,6 @@
 package com.jamycake.aiagent
 
+import com.jamycake.aiagent.app.createApp
 import kotlinx.coroutines.runBlocking
 
 fun main() = runBlocking {
