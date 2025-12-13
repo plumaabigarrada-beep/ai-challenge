@@ -8,17 +8,14 @@ import com.jamycake.aiagent.domain.slots.Stats
 
 internal class Agent(
     val chatMemberId: ChatMemberId = ChatMemberId(),
-    private val name: String = "",
-    private val config: Config,
-    private val context: Context,
+    private val state: AgentState,
     private val clients: Map<ClientType, Client>,
     private val chats: Map<String, Chat>,
     private val stats: Stats,
-    clientType: ClientType,
 ) {
 
     private var chatId = chats.keys.first()
-    private var clientType: ClientType = clientType
+    private var clientType: ClientType = state.config.clientType
 
 
     suspend fun updateContext(chatMessage: ChatMessage) {
@@ -28,13 +25,13 @@ internal class Agent(
             content = chatMessage.content,
         )
 
-        context.addMessage(contextMessage)
+        state.context.addMessage(contextMessage)
 
         val client = clients[clientType]!!
         val (newContextMessage, tokensUsage) = client.sendContext(
-            context = context,
-            temperature = config.temperature,
-            model = config.model
+            context = state.context,
+            temperature = state.config.temperature,
+            model = state.config.model
         )
 
         stats.save(contextMessage.id, tokensUsage)
@@ -49,7 +46,7 @@ internal class Agent(
         val sentContextMessage = newContextMessage.copy(chatMessageId = newChatMessage.id)
 
 
-        context.addMessage(sentContextMessage)
+        state.context.addMessage(sentContextMessage)
         chats[chatId]!!.sendMessage(chatMemberId, newChatMessage)
 
     }

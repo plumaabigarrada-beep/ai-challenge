@@ -2,10 +2,7 @@ package com.jamycake.aiagent.app
 
 import com.jamycake.aiagent.data.GeneralClient
 import com.jamycake.aiagent.data.RamStats
-import com.jamycake.aiagent.domain.core.agent.Agent
-import com.jamycake.aiagent.domain.core.agent.ClientType
-import com.jamycake.aiagent.domain.core.agent.Config
-import com.jamycake.aiagent.domain.core.agent.Context
+import com.jamycake.aiagent.domain.core.agent.*
 import com.jamycake.aiagent.domain.core.chat.Chat
 import com.jamycake.aiagent.domain.core.user.User
 import com.jamycake.aiagent.domain.slots.Client
@@ -30,16 +27,18 @@ internal fun createApp() : App {
 
     val chats = mapOf(chat.id to chat)
 
-    val config = Config()
 
-    val agent = Agent(
+    val agentState = AgentState(
         name = "",
         config = Config(),
+        context = Context(messages = emptyList()),
+    )
+
+    val agent = Agent(
+        state = agentState,
         clients = clients,
         chats = chats,
         stats = stats,
-        clientType = config.clientType,
-        context = Context(messages = emptyList())
     )
 
     val user = User(
