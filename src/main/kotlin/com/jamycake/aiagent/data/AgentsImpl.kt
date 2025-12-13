@@ -120,7 +120,15 @@ internal class AgentsImpl(
         )
 
         val jsonString = json.encodeToString(savedData)
-        File(storagePath).writeText(jsonString)
+
+        // Ensure the directory exists
+        val agentFolder = File(storagePath)
+        if (!agentFolder.exists()) {
+            agentFolder.mkdirs()
+        }
+
+        // Write to a specific file using agent's ID
+        File(storagePath, "${agent.id.value}.json").writeText(jsonString)
     }
 
     @Serializable
