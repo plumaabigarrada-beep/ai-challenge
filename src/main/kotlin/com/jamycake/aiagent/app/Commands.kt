@@ -9,6 +9,7 @@ import com.jamycake.aiagent.domain.space.Space
 import com.jamycake.aiagent.domain.slots.Agents
 import com.jamycake.aiagent.domain.slots.Chats
 import com.jamycake.aiagent.domain.slots.Stats
+import com.jamycake.aiagent.domain.slots.UI
 import com.jamycake.aiagent.domain.slots.Users
 import com.jamycake.aiagent.terminal.Command
 import com.jamycake.aiagent.terminal.TerminalUI
@@ -17,7 +18,7 @@ internal fun commands(
     chats: Chats,
     users: Users,
     stats: Stats,
-    terminalUI: TerminalUI,
+    terminalUI: UI,
     agents: Agents,
     space: Space,
     focusManager: FocusManager

@@ -2,10 +2,10 @@ package com.jamycake.aiagent.app.commands.space
 
 import com.jamycake.aiagent.domain.slots.Agents
 import com.jamycake.aiagent.domain.slots.Chats
+import com.jamycake.aiagent.domain.slots.UI
 import com.jamycake.aiagent.domain.slots.Users
 import com.jamycake.aiagent.domain.space.Space
 import com.jamycake.aiagent.terminal.Command
-import com.jamycake.aiagent.terminal.TerminalUI
 
 
 internal class RestoreAgentCommand(
@@ -13,7 +13,7 @@ internal class RestoreAgentCommand(
     private val chats: Chats,
     private val users: Users,
     private val space: Space,
-    private val terminalUI: TerminalUI
+    private val ui: UI
 ) : Command(values = listOf(name)) {
 
 
@@ -24,7 +24,7 @@ internal class RestoreAgentCommand(
 
 
         if (agent == null) {
-            terminalUI.out("No agent")
+            ui.out("No agent")
             return
         }
         agent.forEach {
