@@ -15,6 +15,7 @@ internal class User(
     suspend fun sendMessage(message: String) {
         val message = ChatMessage(
             role = "user",
+            name = "User",
             content = message,
         )
 

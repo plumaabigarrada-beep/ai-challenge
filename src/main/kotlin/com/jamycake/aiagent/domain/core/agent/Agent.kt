@@ -2,9 +2,9 @@ package com.jamycake.aiagent.domain.core.agent
 
 import com.jamycake.aiagent.domain.core.chat.ChatMemberId
 import com.jamycake.aiagent.domain.core.chat.ChatMessage
-import com.jamycake.aiagent.domain.space.Space
 import com.jamycake.aiagent.domain.slots.Client
 import com.jamycake.aiagent.domain.slots.Stats
+import com.jamycake.aiagent.domain.space.Space
 
 internal class Agent(
     val id: AgentId = AgentId(),
@@ -40,6 +40,7 @@ internal class Agent(
         val newChatMessage = ChatMessage(
             role = newContextMessage.role,
             content = newContextMessage.content,
+            name = state.name,
             contextMessageId = newContextMessage.id
         )
 

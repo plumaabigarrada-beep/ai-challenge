@@ -28,13 +28,7 @@ internal class AgentsImpl(
         val agentFolder = File(storagePath)
         val listFiles = agentFolder.listFiles()
         if (!agentFolder.exists() || listFiles.isEmpty()) {
-            return listOf(
-                defauldAgent(
-                    clients = clients,
-                    space = space,
-                    stats = stats
-                )
-            )
+            return emptyList()
         }
 
         return listFiles.map { file ->
@@ -72,26 +66,7 @@ internal class AgentsImpl(
 
     }
 
-    private fun defauldAgent(
-        clients: Map<ClientType, Client>,
-        space: Space,
-        stats: Stats
-    ): Agent {
-        val agentState = AgentState(
-            name = "",
-            config = Config(temperature = 0.7),
-            context = Context(messages = emptyList()),
-            chatId = ChatId.empty()
-        )
 
-        val agent = Agent(
-            state = agentState,
-            clients = clients,
-            space = space,
-            stats = stats,
-        )
-        return agent
-    }
 
 
     override suspend fun save(agent: Agent) {
@@ -129,6 +104,35 @@ internal class AgentsImpl(
 
         // Write to a specific file using agent's ID
         File(storagePath, "${agent.id.value}.json").writeText(jsonString)
+    }
+
+    override suspend fun new() : Agent {
+        return defauldAgent(
+            clients = clients,
+            space = space,
+            stats = stats
+        )
+    }
+
+    private fun defauldAgent(
+        clients: Map<ClientType, Client>,
+        space: Space,
+        stats: Stats
+    ): Agent {
+        val agentState = AgentState(
+            name = "",
+            config = Config(temperature = 0.7),
+            context = Context(messages = emptyList()),
+            chatId = ChatId.empty()
+        )
+
+        val agent = Agent(
+            state = agentState,
+            clients = clients,
+            space = space,
+            stats = stats,
+        )
+        return agent
     }
 
     @Serializable

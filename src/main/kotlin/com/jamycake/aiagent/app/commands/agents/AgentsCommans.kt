@@ -6,7 +6,9 @@ import com.jamycake.aiagent.terminal.Command
 
 internal fun agentsCommand(
     agents: Agents,
-    currentAgents: () -> List<Agent>
+    addAgent: (Agent) -> Unit,
+    currentAgents: () -> List<Agent>,
+    outMessage: (String) -> Unit
 ) : List<Command> {
 
 
@@ -14,6 +16,11 @@ internal fun agentsCommand(
         SaveAgentsCommand(
             agents = agents,
             currentAgents = currentAgents
+        ),
+        CreateNewAgent(
+            agents = agents,
+            addAgent = addAgent,
+            outMessage = outMessage
         )
     )
 

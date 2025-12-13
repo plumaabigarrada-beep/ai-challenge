@@ -18,16 +18,16 @@ internal class RestoreAgentCommand(
 
 
     override suspend fun execute(args: String?) {
-        val agent = agents.get()
+        val agents = this@RestoreAgentCommand.agents.get()
         val chat = chats.getChat()
         val user = users.get()
 
 
-        if (agent == null) {
-            ui.out("No agent")
+        if (agents.isEmpty()) {
+            ui.out("No agents")
             return
         }
-        agent.forEach {
+        agents.forEach {
             space.addAgent(it)
         }
 
