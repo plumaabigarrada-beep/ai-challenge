@@ -23,5 +23,5 @@ abstract class Command(
         return extractValue(input)?.toDoubleOrNull()
     }
 
-    abstract suspend fun execute(args: String?): String
+    abstract suspend fun execute(args: String?)
 }

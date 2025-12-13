@@ -1,0 +1,76 @@
+package com.jamycake.aiagent
+
+import com.jamycake.aiagent.app.App
+import com.jamycake.aiagent.app.commands.chat.chatCommands
+import com.jamycake.aiagent.data.GeneralClient
+import com.jamycake.aiagent.data.RamStats
+import com.jamycake.aiagent.domain.core.agent.Agent
+import com.jamycake.aiagent.domain.core.agent.ClientType
+import com.jamycake.aiagent.domain.core.agent.Config
+import com.jamycake.aiagent.domain.core.agent.Context
+import com.jamycake.aiagent.domain.core.chat.Chat
+import com.jamycake.aiagent.domain.core.user.User
+import com.jamycake.aiagent.domain.slots.Client
+import com.jamycake.aiagent.terminal.Terminal
+import com.jamycake.aiagent.terminal.TerminalUI
+
+internal fun createApp() : App {
+
+    val perplexityClient = GeneralClient(baseUrl = "https://api.perplexity.ai/chat/completions")
+    val huggingFaceClient = GeneralClient(baseUrl = "https://router.huggingface.co/v1/chat/completions")
+    val lmstudioClient = GeneralClient(baseUrl = "http://localhost:1234/v1/chat/completions")
+
+    val clients = mapOf<ClientType, Client>(
+        ClientType.LMSTUDIO to lmstudioClient,
+        ClientType.PERPLEXITY to perplexityClient,
+        ClientType.HUGGINGFACE to huggingFaceClient
+    )
+
+    val stats = RamStats()
+
+    val chat = Chat()
+
+    val chats = mapOf(chat.id to chat)
+
+    val config = Config()
+
+    val agent = Agent(
+        name = "",
+        config = Config(),
+        clients = clients,
+        chats = chats,
+        stats = stats,
+        clientType = config.clientType,
+        context = Context(messages = emptyList())
+    )
+
+    val user = User(
+        chats = chats
+    )
+
+    val terminalUI = TerminalUI()
+
+    chat.addMember(agent.chatMemberId) { chatMessage -> agent.updateContext(chatMessage) }
+
+    chat.addMember(user.chatMemberId) { terminalUI.recieveMessage(it.content) }
+
+
+
+    val chatCommands = chatCommands(user)
+
+    val terminal = Terminal(
+        onNoCommands = { user.sendMessage(it) },
+        commands = chatCommands
+    )
+
+    val app = App(
+        clients = clients,
+        terminal = terminal
+    )
+
+    return app
+
+
+}
+
+
