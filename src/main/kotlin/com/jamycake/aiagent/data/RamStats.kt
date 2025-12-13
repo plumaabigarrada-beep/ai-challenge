@@ -17,4 +17,8 @@ internal class RamStats : Stats {
     override fun getTokensUsage(contextMessageId: String): TokensUsage {
         return stats[contextMessageId]!!
     }
+
+    override fun getAllTokensUsage(): List<TokensUsage> {
+        return stats.values.toList()
+    }
 }

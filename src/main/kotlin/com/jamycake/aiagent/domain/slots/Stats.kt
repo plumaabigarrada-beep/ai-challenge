@@ -6,4 +6,6 @@ internal interface Stats {
     fun save(contextMessageId: String, tokensUsage: TokensUsage)
 
     fun getTokensUsage(contextMessageId: String) : TokensUsage
+
+    fun getAllTokensUsage() : List<TokensUsage>
 }

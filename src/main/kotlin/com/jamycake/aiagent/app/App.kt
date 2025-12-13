@@ -15,7 +15,6 @@ internal class App(
 
 
     suspend fun run(){
-
         terminal.run()
     }
 

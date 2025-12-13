@@ -2,7 +2,7 @@ package com.jamycake.aiagent.terminal
 
 class TerminalUI {
 
-    fun recieveMessage(message: String) {
+    fun sendMessage(message: String) {
         println(message)
     }
 }

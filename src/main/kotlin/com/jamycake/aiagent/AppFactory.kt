@@ -2,6 +2,7 @@ package com.jamycake.aiagent
 
 import com.jamycake.aiagent.app.App
 import com.jamycake.aiagent.app.commands.chat.chatCommands
+import com.jamycake.aiagent.app.commands.stats.statsCommands
 import com.jamycake.aiagent.data.GeneralClient
 import com.jamycake.aiagent.data.RamStats
 import com.jamycake.aiagent.domain.core.agent.Agent
@@ -52,15 +53,18 @@ internal fun createApp() : App {
 
     chat.addMember(agent.chatMemberId) { chatMessage -> agent.updateContext(chatMessage) }
 
-    chat.addMember(user.chatMemberId) { terminalUI.recieveMessage(it.content) }
+    chat.addMember(user.chatMemberId) { terminalUI.sendMessage(it.content) }
 
 
 
     val chatCommands = chatCommands(user)
+    val statsCommands = statsCommands(stats = stats, terminalUI)
+
+    val allCommands = chatCommands + statsCommands
 
     val terminal = Terminal(
         onNoCommands = { user.sendMessage(it) },
-        commands = chatCommands
+        commands = allCommands
     )
 
     val app = App(
