@@ -17,6 +17,7 @@ internal class Space(
     private val users = mutableMapOf<UserId, User>()
 
     val allAgents get() = agents.values.toList()
+    val allChats get() = chats.values.toList()
 
     fun addAgent(agent: Agent) {
         agents[agent.id] = agent
@@ -57,8 +58,19 @@ internal class Space(
 
         agents.values.forEach { agent ->
             val chat = chats[agent.state.chatId]
-            chat?.addMember(agent.chatMemberId) { agent.updateContext(it) }
+            agent.chatMemberId = chat?.addMember { agent.updateContext(it) }
         }
+    }
+
+    fun wireAgentToChat(agentId: AgentId, chatId: ChatId) {
+        val agent = agents[agentId] ?: return
+        val chat = chats[chatId] ?: return
+
+        // Update agent's chatId
+        agent.state.chatId = chatId
+
+        // Wire the agent to the new chat
+        agent.chatMemberId = chat.addMember { agent.updateContext(it) }
     }
 
 }

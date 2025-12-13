@@ -1,5 +1,7 @@
 package com.jamycake.aiagent.app.commands.space
 
+import com.jamycake.aiagent.app.commands.space.ListAgentsCommand
+import com.jamycake.aiagent.app.commands.space.ListChatsCommand
 import com.jamycake.aiagent.domain.slots.Agents
 import com.jamycake.aiagent.domain.slots.Chats
 import com.jamycake.aiagent.domain.slots.UI
@@ -21,6 +23,25 @@ internal fun spaceCommands(
             users,
             space,
             terminalUI,
+        ),
+        ListChatsCommand(
+            allChats = space::allChats,
+            ui = terminalUI
+        ),
+        ListAgentsCommand(
+            allAgents = space::allAgents,
+            ui = terminalUI
+        ),
+        ShowWiringsCommand(
+            allAgents = space::allAgents,
+            allChats = space::allChats,
+            ui = terminalUI
+        ),
+        WireAgentToChatCommand(
+            allAgents = space::allAgents,
+            allChats = space::allChats,
+            space = space,
+            ui = terminalUI
         )
     )
 }

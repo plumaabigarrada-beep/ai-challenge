@@ -8,7 +8,7 @@ import com.jamycake.aiagent.domain.space.Space
 
 internal class Agent(
     val id: AgentId = AgentId(),
-    val chatMemberId: ChatMemberId = ChatMemberId(),
+    var chatMemberId: ChatMemberId? = null,
     val state: AgentState,
     private val clients: Map<ClientType, Client>,
     private val space: Space,
