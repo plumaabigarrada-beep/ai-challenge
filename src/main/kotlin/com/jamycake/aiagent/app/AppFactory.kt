@@ -1,10 +1,12 @@
 package com.jamycake.aiagent.app
 
+import com.jamycake.aiagent.data.AgentsImpl
 import com.jamycake.aiagent.data.GeneralClient
 import com.jamycake.aiagent.data.RamStats
 import com.jamycake.aiagent.domain.core.agent.*
 import com.jamycake.aiagent.domain.core.chat.Chat
 import com.jamycake.aiagent.domain.core.user.User
+import com.jamycake.aiagent.domain.slots.Agents
 import com.jamycake.aiagent.domain.slots.Client
 import com.jamycake.aiagent.terminal.Terminal
 import com.jamycake.aiagent.terminal.TerminalUI
@@ -28,14 +30,9 @@ internal fun createApp() : App {
     val chats = mapOf(chat.id to chat)
 
 
-    val agentState = AgentState(
-        name = "",
-        config = Config(),
-        context = Context(messages = emptyList()),
-    )
+    val agent = defauldAgent(clients, chats, stats)
 
-    val agent = Agent(
-        state = agentState,
+    val agents: Agents = AgentsImpl(
         clients = clients,
         chats = chats,
         stats = stats,
@@ -55,7 +52,9 @@ internal fun createApp() : App {
     val allCommands = commands(
         user = user,
         stats = stats,
-        terminalUI = terminalUI
+        terminalUI = terminalUI,
+        agents = agents,
+        agent = agent,
     )
 
     val terminal = Terminal(
@@ -71,6 +70,26 @@ internal fun createApp() : App {
     return app
 
 
+}
+
+private fun defauldAgent(
+    clients: Map<ClientType, Client>,
+    chats: Map<String, Chat>,
+    stats: RamStats
+): Agent {
+    val agentState = AgentState(
+        name = "",
+        config = Config(temperature = 0.7),
+        context = Context(messages = emptyList()),
+    )
+
+    val agent = Agent(
+        state = agentState,
+        clients = clients,
+        chats = chats,
+        stats = stats,
+    )
+    return agent
 }
 
 

@@ -4,5 +4,7 @@ import com.jamycake.aiagent.domain.core.agent.Agent
 
 internal interface Agents {
 
-    suspend fun getAll() : List<Agent>
+    suspend fun get(): Agent
+
+    suspend fun save(agent: Agent)
 }

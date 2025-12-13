@@ -1,11 +1,15 @@
 package com.jamycake.aiagent.domain.core.agent
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 enum class ClientType {
     PERPLEXITY,
     HUGGINGFACE,
     LMSTUDIO
 }
 
+@Serializable
 data class Config(
     var model: String = "qwen/qwen2.5-coder-14b",
     var temperature: Double = 0.7,

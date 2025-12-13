@@ -7,8 +7,9 @@ import com.jamycake.aiagent.domain.slots.Client
 import com.jamycake.aiagent.domain.slots.Stats
 
 internal class Agent(
+    val id: AgentId = AgentId(),
     val chatMemberId: ChatMemberId = ChatMemberId(),
-    private val state: AgentState,
+    val state: AgentState,
     private val clients: Map<ClientType, Client>,
     private val chats: Map<String, Chat>,
     private val stats: Stats,
