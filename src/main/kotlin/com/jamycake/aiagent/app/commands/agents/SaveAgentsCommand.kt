@@ -7,10 +7,16 @@ import com.jamycake.aiagent.terminal.Command
 internal class SaveAgentsCommand(
     private val agents: Agents,
     private val currentAgents: () -> List<Agent>
-) : Command(values = listOf("--save-agent")){
+) : Command(values = listOf("--save-agents")){
 
     override suspend fun execute(args: String?) {
-        currentAgents.invoke().forEach {
+        val agentList = currentAgents.invoke()
+
+        if (agentList.isEmpty()) {
+            return
+        }
+
+        agentList.forEach {
             agents.save(it)
         }
     }

@@ -19,19 +19,18 @@ internal class RestoreAppStateCommand(
 
     override suspend fun execute(args: String?) {
         val agents = this@RestoreAppStateCommand.agents.get()
-        val chat = chats.getAllChats()
+        val chats = this@RestoreAppStateCommand.chats.getAllChats()
         val user = users.get()
 
 
         if (agents.isEmpty()) {
             ui.out("No agents")
-            return
         }
         agents.forEach {
             space.addAgent(it)
         }
 
-        space.addChats(chat)
+        space.addChats(chats)
         space.addUser(user)
 
         space.wire()

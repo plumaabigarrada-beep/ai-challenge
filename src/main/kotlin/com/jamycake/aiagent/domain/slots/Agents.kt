@@ -6,7 +6,7 @@ internal interface Agents {
 
     suspend fun get(): List<Agent>
 
-    suspend fun save(agent: Agent)
+    suspend fun save(agents: Agent)
 
     suspend fun new() : Agent
 }

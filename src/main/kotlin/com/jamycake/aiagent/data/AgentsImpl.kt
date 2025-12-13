@@ -49,12 +49,13 @@ internal class AgentsImpl(
                 name = savedData.state.name,
                 config = savedData.state.config,
                 context = context,
-                chatId = ChatId.empty()
+                chatId = ChatId(savedData.state.chatId)
             )
 
             val chatMemberId = ChatMemberId(savedData.id)
 
             Agent(
+                id = AgentId(savedData.id),
                 chatMemberId = chatMemberId,
                 state = agentState,
                 clients = clients,
@@ -73,11 +74,12 @@ internal class AgentsImpl(
 
         val agentState = agent.state
 
-        println(agent.state.config)
+        println(agent.state)
 
         val savedState = SavedAgentState(
             name = agentState.name,
             config = agentState.config,
+            chatId = agent.state.chatId.value,
             contextMessages = agentState.context.messages.map { msg ->
                 SavedContextMessage(
                     id = msg.id,
@@ -88,13 +90,19 @@ internal class AgentsImpl(
             }
         )
 
+        println(savedState)
+
         val savedData = SavedAgentData(
             id = agent.id.value,
             chatMemberId = agent.chatMemberId?.value.orEmpty(),
             state = savedState
         )
 
+        println(savedData)
+
         val jsonString = json.encodeToString(savedData)
+
+        println(jsonString)
 
         // Ensure the directory exists
         val agentFolder = File(storagePath)
@@ -145,6 +153,7 @@ internal class AgentsImpl(
     @Serializable
     private data class SavedAgentState(
         val name: String,
+        val chatId: String,
         val config: Config,
         val contextMessages: List<SavedContextMessage>
     )
