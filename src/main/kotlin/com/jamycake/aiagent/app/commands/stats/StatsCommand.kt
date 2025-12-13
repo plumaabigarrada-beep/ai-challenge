@@ -14,6 +14,6 @@ internal class StatsCommand(
     override suspend fun execute(args: String?) {
         val allTokens = stats.getAllTokensUsage()
         val message = allTokensUsagePresenter.present(allTokens)
-        terminalUI.sendMessage(message)
+        terminalUI.out(message)
     }
 }

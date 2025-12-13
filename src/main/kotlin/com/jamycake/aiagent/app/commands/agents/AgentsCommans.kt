@@ -6,14 +6,14 @@ import com.jamycake.aiagent.terminal.Command
 
 internal fun agentsCommand(
     agents: Agents,
-    agent: Agent
+    currentAgents: () -> List<Agent>
 ) : List<Command> {
 
 
     return listOf(
-        SaveAgentCommand(
+        SaveAgentsCommand(
             agents = agents,
-            agent = agent
+            currentAgents = currentAgents
         )
     )
 

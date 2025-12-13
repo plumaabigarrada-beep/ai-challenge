@@ -4,12 +4,14 @@ import com.jamycake.aiagent.domain.core.agent.Agent
 import com.jamycake.aiagent.domain.slots.Agents
 import com.jamycake.aiagent.terminal.Command
 
-internal class SaveAgentCommand(
+internal class SaveAgentsCommand(
     private val agents: Agents,
-    private val agent: Agent
+    private val currentAgents: () -> List<Agent>
 ) : Command(values = listOf("--save-agent")){
 
     override suspend fun execute(args: String?) {
-        agents.save(agent)
+        currentAgents.invoke().forEach {
+            agents.save(it)
+        }
     }
 }

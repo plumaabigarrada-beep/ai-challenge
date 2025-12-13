@@ -1,13 +1,13 @@
 package com.jamycake.aiagent.app
 
-import com.jamycake.aiagent.data.AgentsImpl
-import com.jamycake.aiagent.data.GeneralClient
-import com.jamycake.aiagent.data.RamStats
-import com.jamycake.aiagent.domain.core.agent.*
-import com.jamycake.aiagent.domain.core.chat.Chat
-import com.jamycake.aiagent.domain.core.user.User
+import com.jamycake.aiagent.data.*
+import com.jamycake.aiagent.domain.FocusManager
+import com.jamycake.aiagent.domain.core.agent.ClientType
 import com.jamycake.aiagent.domain.slots.Agents
+import com.jamycake.aiagent.domain.slots.Chats
 import com.jamycake.aiagent.domain.slots.Client
+import com.jamycake.aiagent.domain.slots.Users
+import com.jamycake.aiagent.domain.space.Space
 import com.jamycake.aiagent.terminal.Terminal
 import com.jamycake.aiagent.terminal.TerminalUI
 
@@ -25,40 +25,36 @@ internal fun createApp() : App {
 
     val stats = RamStats()
 
-    val chat = Chat()
-
-    val chats = mapOf(chat.id to chat)
 
 
-    val agent = defauldAgent(clients, chats, stats)
+
+    val terminalUI = TerminalUI()
+    val space = Space(ui = terminalUI)
 
     val agents: Agents = AgentsImpl(
         clients = clients,
-        chats = chats,
+        space = space,
         stats = stats,
     )
 
-    val user = User(
-        chats = chats
-    )
+    val users: Users = UsersImpl(chat = space::getChat)
+    val chats: Chats = ChatsImpl()
 
-    val terminalUI = TerminalUI()
 
-    chat.addMember(agent.chatMemberId) { chatMessage -> agent.updateContext(chatMessage) }
-
-    chat.addMember(user.chatMemberId) { terminalUI.sendMessage(it.content) }
-
+    val focusManager = FocusManager()
 
     val allCommands = commands(
-        user = user,
         stats = stats,
         terminalUI = terminalUI,
         agents = agents,
-        agent = agent,
+        space = space,
+        focusManager = focusManager,
+        chats = chats,
+        users = users
     )
 
     val terminal = Terminal(
-        onNoCommands = { user.sendMessage(it) },
+        onNoCommands = { space.getUser(focusManager.userid)?.sendMessage(it) },
         commands = allCommands
     )
 
@@ -71,25 +67,3 @@ internal fun createApp() : App {
 
 
 }
-
-private fun defauldAgent(
-    clients: Map<ClientType, Client>,
-    chats: Map<String, Chat>,
-    stats: RamStats
-): Agent {
-    val agentState = AgentState(
-        name = "",
-        config = Config(temperature = 0.7),
-        context = Context(messages = emptyList()),
-    )
-
-    val agent = Agent(
-        state = agentState,
-        clients = clients,
-        chats = chats,
-        stats = stats,
-    )
-    return agent
-}
-
-

@@ -1,8 +1,8 @@
 package com.jamycake.aiagent.domain.core.agent
 
-import com.jamycake.aiagent.domain.core.chat.Chat
 import com.jamycake.aiagent.domain.core.chat.ChatMemberId
 import com.jamycake.aiagent.domain.core.chat.ChatMessage
+import com.jamycake.aiagent.domain.space.Space
 import com.jamycake.aiagent.domain.slots.Client
 import com.jamycake.aiagent.domain.slots.Stats
 
@@ -11,11 +11,10 @@ internal class Agent(
     val chatMemberId: ChatMemberId = ChatMemberId(),
     val state: AgentState,
     private val clients: Map<ClientType, Client>,
-    private val chats: Map<String, Chat>,
+    private val space: Space,
     private val stats: Stats,
 ) {
 
-    private var chatId = chats.keys.first()
     private var clientType: ClientType = state.config.clientType
 
 
@@ -48,7 +47,7 @@ internal class Agent(
 
 
         state.context.addMessage(sentContextMessage)
-        chats[chatId]!!.sendMessage(chatMemberId, newChatMessage)
+        space.getChat(state.chatId)!!.sendMessage(chatMemberId, newChatMessage)
 
     }
 

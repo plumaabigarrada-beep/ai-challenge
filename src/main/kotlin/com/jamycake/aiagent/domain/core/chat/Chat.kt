@@ -1,9 +1,7 @@
 package com.jamycake.aiagent.domain.core.chat
 
-import java.util.*
-
 internal class Chat(
-    val id: String = UUID.randomUUID().toString(),
+    val id: ChatId = ChatId(),
     messages: List<ChatMessage> = emptyList()
 ) {
 

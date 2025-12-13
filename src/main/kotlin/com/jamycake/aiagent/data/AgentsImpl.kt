@@ -1,11 +1,12 @@
 package com.jamycake.aiagent.data
 
 import com.jamycake.aiagent.domain.core.agent.*
-import com.jamycake.aiagent.domain.core.chat.Chat
+import com.jamycake.aiagent.domain.core.chat.ChatId
 import com.jamycake.aiagent.domain.core.chat.ChatMemberId
 import com.jamycake.aiagent.domain.slots.Agents
 import com.jamycake.aiagent.domain.slots.Client
 import com.jamycake.aiagent.domain.slots.Stats
+import com.jamycake.aiagent.domain.space.Space
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -13,9 +14,9 @@ import java.io.File
 
 internal class AgentsImpl(
     private val clients: Map<ClientType, Client>,
-    private val chats: Map<String, Chat>,
+    private val space: Space,
     private val stats: Stats,
-    private val storagePath: String = "agent-state.json"
+    private val storagePath: String = "agents/"
 ) : Agents {
 
     private val json = Json {
@@ -23,41 +24,75 @@ internal class AgentsImpl(
         ignoreUnknownKeys = true
     }
 
-    override suspend fun get(): Agent {
-        val file = File(storagePath)
-        if (!file.exists()) {
-            throw IllegalStateException("Agent not found. Please save an agent first.")
+    override suspend fun get(): List<Agent> {
+        val agentFolder = File(storagePath)
+        val listFiles = agentFolder.listFiles()
+        if (!agentFolder.exists() || listFiles.isEmpty()) {
+            return listOf(
+                defauldAgent(
+                    clients = clients,
+                    space = space,
+                    stats = stats
+                )
+            )
         }
 
-        val savedData = json.decodeFromString<SavedAgentData>(file.readText())
+        return listFiles.map { file ->
+            val savedData = json.decodeFromString<SavedAgentData>(file.readText())
 
-        val context = Context(
-            messages = savedData.state.contextMessages.map { msg ->
-                ContextMessage(
-                    id = msg.id,
-                    role = msg.role,
-                    content = msg.content,
-                    chatMessageId = msg.chatMessageId
-                )
-            }
-        )
+            val context = Context(
+                messages = savedData.state.contextMessages.map { msg ->
+                    ContextMessage(
+                        id = msg.id,
+                        role = msg.role,
+                        content = msg.content,
+                        chatMessageId = msg.chatMessageId
+                    )
+                }
+            )
 
+            val agentState = AgentState(
+                name = savedData.state.name,
+                config = savedData.state.config,
+                context = context,
+                chatId = ChatId.empty()
+            )
+
+            val chatMemberId = ChatMemberId(savedData.id)
+
+            Agent(
+                chatMemberId = chatMemberId,
+                state = agentState,
+                clients = clients,
+                stats = stats,
+                space = space
+            )
+        }
+
+
+    }
+
+    private fun defauldAgent(
+        clients: Map<ClientType, Client>,
+        space: Space,
+        stats: Stats
+    ): Agent {
         val agentState = AgentState(
-            name = savedData.state.name,
-            config = savedData.state.config,
-            context = context
+            name = "",
+            config = Config(temperature = 0.7),
+            context = Context(messages = emptyList()),
+            chatId = ChatId.empty()
         )
 
-        val chatMemberId = ChatMemberId(savedData.id)
-
-        return Agent(
-            chatMemberId = chatMemberId,
+        val agent = Agent(
             state = agentState,
             clients = clients,
-            chats = chats,
-            stats = stats
+            space = space,
+            stats = stats,
         )
+        return agent
     }
+
 
     override suspend fun save(agent: Agent) {
 

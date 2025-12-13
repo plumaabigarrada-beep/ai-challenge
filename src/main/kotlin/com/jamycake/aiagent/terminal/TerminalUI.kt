@@ -1,8 +1,10 @@
 package com.jamycake.aiagent.terminal
 
-class TerminalUI {
+import com.jamycake.aiagent.domain.slots.UI
 
-    fun sendMessage(message: String) {
+class TerminalUI : UI {
+
+    override fun out(message: String) {
         println(message)
     }
 }
