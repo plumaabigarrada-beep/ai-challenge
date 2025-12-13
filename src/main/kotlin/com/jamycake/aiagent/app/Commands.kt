@@ -2,6 +2,7 @@ package com.jamycake.aiagent.app
 
 import com.jamycake.aiagent.app.commands.agents.agentsCommand
 import com.jamycake.aiagent.app.commands.chat.chatCommands
+import com.jamycake.aiagent.app.commands.help.HelpCommand
 import com.jamycake.aiagent.app.commands.space.spaceCommands
 import com.jamycake.aiagent.app.commands.stats.statsCommands
 import com.jamycake.aiagent.domain.FocusManager
@@ -37,7 +38,16 @@ internal fun commands(
         terminalUI,
     )
 
-    val allCommands = chatCommands + statsCommands + agentsCommands + spaceCommands
+    // Create list without help command first
+    val commandsWithoutHelp = chatCommands + statsCommands + agentsCommands + spaceCommands
+
+    // Create help command with reference to all commands
+    val helpCommand = HelpCommand(
+        allCommands = { commandsWithoutHelp },
+        ui = terminalUI
+    )
+
+    val allCommands = commandsWithoutHelp + helpCommand
 
     return allCommands
 }
