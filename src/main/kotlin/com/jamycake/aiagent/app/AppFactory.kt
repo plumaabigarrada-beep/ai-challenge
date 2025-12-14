@@ -27,14 +27,15 @@ internal fun createApp() : App {
     val terminalUI = TerminalUI()
     val space = Space(ui = terminalUI)
 
+    val users: Users = UsersImpl()
+    val chats: Chats = ChatsImpl()
+
     val agents: Agents = AgentsImpl(
         clients = clients,
         space = space,
         stats = stats,
+        chats = chats
     )
-
-    val users: Users = UsersImpl()
-    val chats: Chats = ChatsImpl()
 
     val allCommands = commands(
         stats = stats,

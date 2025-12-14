@@ -13,6 +13,7 @@ internal class Agent(
     private val clients: Map<ClientType, Client>,
     private val space: Space,
     private val stats: Stats,
+    private val onMessageSent: suspend (Agent) -> Unit = {}
 ) {
 
     private var clientType: ClientType = state.config.clientType
@@ -58,6 +59,9 @@ internal class Agent(
         if (state.chatId == null) return
 
         space.getChat(state.chatId!!)!!.sendMessage(chatMemberId!!, newAgnetChatMessage)
+
+        // Save agent state and chat after sending message
+        onMessageSent(this)
 
     }
 

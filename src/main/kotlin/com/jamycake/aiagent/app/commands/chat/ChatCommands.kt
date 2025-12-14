@@ -23,9 +23,7 @@ internal fun chatCommands(
         SendMessageCommand(
             getCurrentUser = getCurrentUser,
             allChats = allChats,
-            space = space,
-            chats = chats,
-            agents = agents
+            chats = chats
         ),
         SwitchChatCommand(
             allChats = allChats,

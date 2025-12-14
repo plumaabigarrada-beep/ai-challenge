@@ -4,6 +4,7 @@ import com.jamycake.aiagent.domain.core.agent.*
 import com.jamycake.aiagent.domain.core.chat.ChatId
 import com.jamycake.aiagent.domain.core.chat.ChatMemberId
 import com.jamycake.aiagent.domain.slots.Agents
+import com.jamycake.aiagent.domain.slots.Chats
 import com.jamycake.aiagent.domain.slots.Client
 import com.jamycake.aiagent.domain.slots.Stats
 import com.jamycake.aiagent.domain.space.Space
@@ -16,6 +17,7 @@ internal class AgentsImpl(
     private val clients: Map<ClientType, Client>,
     private val space: Space,
     private val stats: Stats,
+    private val chats: Chats,
     private val storagePath: String = "agents/"
 ) : Agents {
 
@@ -60,7 +62,17 @@ internal class AgentsImpl(
                 state = agentState,
                 clients = clients,
                 stats = stats,
-                space = space
+                space = space,
+                onMessageSent = { agent ->
+                    // Save agent state
+                    save(agent)
+                    // Save chat
+                    agent.state.chatId?.let { chatId ->
+                        space.getChat(chatId)?.let { chat ->
+                            chats.saveChat(chat)
+                        }
+                    }
+                }
             )
         }
 
@@ -73,8 +85,6 @@ internal class AgentsImpl(
     override suspend fun save(agent: Agent) {
 
         val agentState = agent.state
-
-        println(agent.state)
 
         val savedState = SavedAgentState(
             name = agentState.name,
@@ -90,19 +100,13 @@ internal class AgentsImpl(
             }
         )
 
-        println(savedState)
-
         val savedData = SavedAgentData(
             id = agent.id.value,
             chatMemberId = agent.chatMemberId?.value.orEmpty(),
             state = savedState
         )
 
-        println(savedData)
-
         val jsonString = json.encodeToString(savedData)
-
-        println(jsonString)
 
         // Ensure the directory exists
         val agentFolder = File(storagePath)
@@ -118,14 +122,16 @@ internal class AgentsImpl(
         return defauldAgent(
             clients = clients,
             space = space,
-            stats = stats
+            stats = stats,
+            chats = chats
         )
     }
 
     private fun defauldAgent(
         clients: Map<ClientType, Client>,
         space: Space,
-        stats: Stats
+        stats: Stats,
+        chats: Chats
     ): Agent {
         val agentState = AgentState(
             name = "",
@@ -139,6 +145,16 @@ internal class AgentsImpl(
             clients = clients,
             space = space,
             stats = stats,
+            onMessageSent = { agent ->
+                // Save agent state
+                save(agent)
+                // Save chat
+                agent.state.chatId?.let { chatId ->
+                    space.getChat(chatId)?.let { chat ->
+                        chats.saveChat(chat)
+                    }
+                }
+            }
         )
         return agent
     }
