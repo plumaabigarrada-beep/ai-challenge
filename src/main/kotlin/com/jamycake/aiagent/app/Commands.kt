@@ -5,7 +5,6 @@ import com.jamycake.aiagent.app.commands.chat.chatCommands
 import com.jamycake.aiagent.app.commands.help.HelpCommand
 import com.jamycake.aiagent.app.commands.space.spaceCommands
 import com.jamycake.aiagent.app.commands.stats.statsCommands
-import com.jamycake.aiagent.domain.FocusManager
 import com.jamycake.aiagent.domain.slots.*
 import com.jamycake.aiagent.domain.space.Space
 import com.jamycake.aiagent.terminal.Command
@@ -16,12 +15,10 @@ internal fun commands(
     stats: Stats,
     terminalUI: UI,
     agents: Agents,
-    space: Space,
-    focusManager: FocusManager
+    space: Space
 ) : List<Command> {
     val chatCommands = chatCommands(
-        user = space::getUser,
-        focusManager = focusManager,
+        getCurrentUser = { space.currentUser },
         allChats = space::allChats,
         space = space,
         ui = terminalUI

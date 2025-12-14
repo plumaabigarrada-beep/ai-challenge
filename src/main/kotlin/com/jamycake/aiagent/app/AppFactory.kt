@@ -1,7 +1,6 @@
 package com.jamycake.aiagent.app
 
 import com.jamycake.aiagent.data.*
-import com.jamycake.aiagent.domain.FocusManager
 import com.jamycake.aiagent.domain.core.agent.ClientType
 import com.jamycake.aiagent.domain.slots.Agents
 import com.jamycake.aiagent.domain.slots.Chats
@@ -25,9 +24,6 @@ internal fun createApp() : App {
 
     val stats = RamStats()
 
-
-
-
     val terminalUI = TerminalUI()
     val space = Space(ui = terminalUI)
 
@@ -37,29 +33,22 @@ internal fun createApp() : App {
         stats = stats,
     )
 
-
-    val focusManager = FocusManager()
-
     val users: Users = UsersImpl(
-        chat = space::getChat,
-        focusManager = focusManager
+        chat = space::getChat
     )
     val chats: Chats = ChatsImpl()
-
-
 
     val allCommands = commands(
         stats = stats,
         terminalUI = terminalUI,
         agents = agents,
         space = space,
-        focusManager = focusManager,
         chats = chats,
         users = users
     )
 
     val terminal = Terminal(
-        onNoCommands = { space.getUser(focusManager.userid)?.sendMessage(it) },
+        onNoCommands = { space.currentUser?.sendMessage(it) },
         commands = allCommands
     )
 
@@ -69,6 +58,4 @@ internal fun createApp() : App {
     )
 
     return app
-
-
 }

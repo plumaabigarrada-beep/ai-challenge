@@ -1,15 +1,15 @@
 package com.jamycake.aiagent.app.commands.chat
 
-import com.jamycake.aiagent.domain.FocusManager
 import com.jamycake.aiagent.domain.core.chat.Chat
 import com.jamycake.aiagent.domain.core.chat.ChatId
+import com.jamycake.aiagent.domain.core.user.User
 import com.jamycake.aiagent.domain.slots.UI
 import com.jamycake.aiagent.domain.space.Space
 import com.jamycake.aiagent.terminal.Command
 
 internal class SwitchChatCommand(
     private val allChats: () -> List<Chat>,
-    private val focusManager: FocusManager,
+    private val getCurrentUser: () -> User?,
     private val space: Space,
     private val ui: UI
 ) : Command(listOf("--switch-chat")) {
@@ -30,11 +30,18 @@ internal class SwitchChatCommand(
             return
         }
 
-        // Switch focus to this chat
-        focusManager.chatId = ChatId(chatId)
+        // Get current user
+        val user = getCurrentUser()
+        if (user == null) {
+            ui.out("No user available")
+            return
+        }
+
+        // Switch user's chat
+        user.chatId = ChatId(chatId)
 
         // Wire the current user to the new chat so they receive messages
-        space.wireUserToChat(focusManager.userid, ChatId(chatId))
+        space.wireUserToChat(user.id, ChatId(chatId))
 
         ui.out("Switched to chat: $chatId")
     }

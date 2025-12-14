@@ -1,18 +1,25 @@
 package com.jamycake.aiagent.app.commands.chat
 
-import com.jamycake.aiagent.domain.FocusManager
 import com.jamycake.aiagent.domain.core.chat.Chat
+import com.jamycake.aiagent.domain.core.user.User
 import com.jamycake.aiagent.domain.slots.UI
 import com.jamycake.aiagent.terminal.Command
 
 internal class CurrentChatCommand(
     private val allChats: () -> List<Chat>,
-    private val focusManager: FocusManager,
+    private val getCurrentUser: () -> User?,
     private val ui: UI
 ) : Command(listOf("--current-chat")) {
 
     override suspend fun execute(args: String?) {
-        val currentChatId = focusManager.chatId
+        // Get current user
+        val user = getCurrentUser()
+        if (user == null) {
+            ui.out("No user available")
+            return
+        }
+
+        val currentChatId = user.chatId
 
         if (currentChatId.value.isEmpty()) {
             ui.out("No chat is currently focused")

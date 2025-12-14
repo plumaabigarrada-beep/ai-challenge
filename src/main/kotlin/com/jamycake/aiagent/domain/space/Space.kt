@@ -16,6 +16,8 @@ internal class Space(
     private val chats = mutableMapOf<ChatId, Chat>()
     private val users = mutableMapOf<UserId, User>()
 
+    var currentUser: User? = null
+
     val allAgents get() = agents.values.toList()
     val allChats get() = chats.values.toList()
 
@@ -29,6 +31,9 @@ internal class Space(
 
     fun addUser(user: User) {
         users[user.id] = user
+        if (currentUser == null) {
+            currentUser = user
+        }
     }
 
     fun getUser(userId: UserId) : User? {
