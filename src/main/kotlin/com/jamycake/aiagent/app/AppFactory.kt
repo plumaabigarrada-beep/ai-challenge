@@ -37,11 +37,16 @@ internal fun createApp() : App {
         stats = stats,
     )
 
-    val users: Users = UsersImpl(chat = space::getChat)
+
+    val focusManager = FocusManager()
+
+    val users: Users = UsersImpl(
+        chat = space::getChat,
+        focusManager = focusManager
+    )
     val chats: Chats = ChatsImpl()
 
 
-    val focusManager = FocusManager()
 
     val allCommands = commands(
         stats = stats,

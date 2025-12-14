@@ -27,7 +27,7 @@ internal class ShowWiringsCommand(
 
             chats.forEach { chat ->
                 appendLine("Chat ID: ${chat.id.value}")
-                val wiredAgents = agents.filter { it.state.chatId.value == chat.id.value }
+                val wiredAgents = agents.filter { it.state.chatId == chat.id }
 
                 if (wiredAgents.isEmpty()) {
                     appendLine("  No agents wired to this chat")

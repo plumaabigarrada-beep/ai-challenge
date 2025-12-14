@@ -21,7 +21,10 @@ internal fun commands(
 ) : List<Command> {
     val chatCommands = chatCommands(
         user = space::getUser,
-        focusManager = focusManager
+        focusManager = focusManager,
+        allChats = space::allChats,
+        space = space,
+        ui = terminalUI
     )
     val statsCommands = statsCommands(stats = stats, terminalUI)
     val agentsCommands = agentsCommand(

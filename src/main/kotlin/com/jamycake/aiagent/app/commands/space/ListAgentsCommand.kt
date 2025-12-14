@@ -23,7 +23,7 @@ internal class ListAgentsCommand(
             agents.forEach { agent ->
                 appendLine("Name: ${agent.state.name}")
                 appendLine("  ID: ${agent.id.value}")
-                appendLine("  Chat ID: ${agent.state.chatId.value}")
+                appendLine("  Chat ID: ${agent.state.chatId?.value}")
                 appendLine("  Model: ${agent.state.config.model}")
                 appendLine("  Client: ${agent.state.config.clientType}")
                 appendLine()

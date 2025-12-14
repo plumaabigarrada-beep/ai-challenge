@@ -77,4 +77,13 @@ internal class Space(
         agent.chatMemberId = chat.addMember { agent.updateContext(it) }
     }
 
+    fun wireUserToChat(userId: UserId, chatId: ChatId) {
+        val user = users[userId] ?: return
+        val chat = chats[chatId] ?: return
+
+        // Wire the user to the new chat to receive messages
+        chat.addMember(user.chatMemberId) { }
+        chat.addMember(user.chatMemberId) { ui.out(it.content) }
+    }
+
 }

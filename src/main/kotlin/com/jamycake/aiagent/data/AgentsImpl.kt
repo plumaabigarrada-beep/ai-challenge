@@ -79,7 +79,7 @@ internal class AgentsImpl(
         val savedState = SavedAgentState(
             name = agentState.name,
             config = agentState.config,
-            chatId = agent.state.chatId.value,
+            chatId = agent.state.chatId?.value.orEmpty(),
             contextMessages = agentState.context.messages.map { msg ->
                 SavedContextMessage(
                     id = msg.id,
@@ -131,7 +131,7 @@ internal class AgentsImpl(
             name = "",
             config = Config(temperature = 0.7),
             context = Context(messages = emptyList()),
-            chatId = ChatId.empty()
+            chatId = null
         )
 
         val agent = Agent(

@@ -49,7 +49,9 @@ internal class Agent(
 
         state.context.addMessage(sentContextMessage)
         if (chatMemberId == null) return
-        space.getChat(state.chatId)!!.sendMessage(chatMemberId!!, newChatMessage)
+        if (state.chatId == null) return
+
+        space.getChat(state.chatId!!)!!.sendMessage(chatMemberId!!, newChatMessage)
 
     }
 
