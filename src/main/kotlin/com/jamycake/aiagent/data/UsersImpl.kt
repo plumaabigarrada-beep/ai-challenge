@@ -44,8 +44,8 @@ internal class UsersImpl(
         if (!userFile.exists()) {
             return UserState(
                 id = UserId(),
-                chatId = ChatId.empty(),
-                chatMemberId = ChatMemberId()
+                chatId = null,
+                chatMemberId = null
             )
         }
 
@@ -53,8 +53,8 @@ internal class UsersImpl(
 
         return UserState(
             id = UserId(savedData.id),
-            chatId = ChatId(savedData.chatId),
-            chatMemberId = ChatMemberId(savedData.chatMemberId)
+            chatId = if (savedData.chatId.isEmpty()) null else ChatId(savedData.chatId),
+            chatMemberId = if (savedData.chatMemberId.isEmpty()) null else ChatMemberId(savedData.chatMemberId)
         )
     }
 

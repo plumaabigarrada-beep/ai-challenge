@@ -4,6 +4,7 @@ import com.jamycake.aiagent.domain.core.chat.Chat
 import com.jamycake.aiagent.domain.core.chat.ChatId
 import com.jamycake.aiagent.domain.core.user.User
 import com.jamycake.aiagent.domain.slots.UI
+import com.jamycake.aiagent.domain.slots.Users
 import com.jamycake.aiagent.domain.space.Space
 import com.jamycake.aiagent.terminal.Command
 
@@ -11,6 +12,7 @@ internal class SwitchChatCommand(
     private val allChats: () -> List<Chat>,
     private val getCurrentUser: () -> User?,
     private val space: Space,
+    private val users: Users,
     private val ui: UI
 ) : Command(listOf("--switch-chat")) {
 
@@ -42,6 +44,9 @@ internal class SwitchChatCommand(
 
         // Wire the current user to the new chat so they receive messages
         space.wireUserToChat(user.id, ChatId(chatId))
+
+        // Save user state to persist the selected chat
+        users.save(user.getState())
 
         ui.out("Switched to chat: $chatId")
     }

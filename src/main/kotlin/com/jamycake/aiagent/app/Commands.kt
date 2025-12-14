@@ -23,6 +23,7 @@ internal fun commands(
         space = space,
         chats = chats,
         agents = agents,
+        users = users,
         ui = terminalUI
     )
     val statsCommands = statsCommands(stats = stats, terminalUI)

@@ -5,6 +5,7 @@ import com.jamycake.aiagent.domain.core.user.User
 import com.jamycake.aiagent.domain.slots.Agents
 import com.jamycake.aiagent.domain.slots.Chats
 import com.jamycake.aiagent.domain.slots.UI
+import com.jamycake.aiagent.domain.slots.Users
 import com.jamycake.aiagent.domain.space.Space
 import com.jamycake.aiagent.terminal.Command
 
@@ -14,6 +15,7 @@ internal fun chatCommands(
     space: Space,
     chats: Chats,
     agents: Agents,
+    users: Users,
     ui: UI
 ) : List<Command>{
 
@@ -29,6 +31,7 @@ internal fun chatCommands(
             allChats = allChats,
             getCurrentUser = getCurrentUser,
             space = space,
+            users = users,
             ui = ui
         ),
         CurrentChatCommand(
