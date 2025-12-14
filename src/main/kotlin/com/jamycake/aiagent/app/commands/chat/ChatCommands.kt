@@ -49,6 +49,11 @@ internal fun chatCommands(
             chats = chats,
             agents = agents,
             ui = ui
+        ),
+        AgentsStatsCommand(
+            getCurrentUser = getCurrentUser,
+            space = space,
+            ui = ui
         )
     )
 }
