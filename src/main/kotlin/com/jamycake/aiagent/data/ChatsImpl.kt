@@ -37,6 +37,7 @@ internal class ChatsImpl(
 
         val savedData = SavedChatData(
             id = chat.id.value,
+            name = chat.name,
             messages = savedMessages
         )
 
@@ -74,6 +75,7 @@ internal class ChatsImpl(
 
             Chat(
                 id = ChatId(savedData.id),
+                name = savedData.name,
                 messages = messages
             )
         }
@@ -83,9 +85,17 @@ internal class ChatsImpl(
         return Chat()
     }
 
+    override suspend fun deleteChat(chat: Chat) {
+        val chatFile = File(storagePath, "${chat.id.value}.json")
+        if (chatFile.exists()) {
+            chatFile.delete()
+        }
+    }
+
     @Serializable
     private data class SavedChatData(
         val id: String,
+        val name: String = "",
         val messages: List<SavedChatMessage>
     )
 

@@ -21,6 +21,8 @@ internal fun commands(
         getCurrentUser = { space.currentUser },
         allChats = space::allChats,
         space = space,
+        chats = chats,
+        agents = agents,
         ui = terminalUI
     )
     val statsCommands = statsCommands(stats = stats, terminalUI)

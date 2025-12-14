@@ -12,4 +12,6 @@ internal interface Chats {
 
     suspend fun newChat(): Chat
 
+    suspend fun deleteChat(chat: Chat)
+
 }

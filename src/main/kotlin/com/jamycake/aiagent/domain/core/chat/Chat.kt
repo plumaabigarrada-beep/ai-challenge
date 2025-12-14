@@ -2,6 +2,7 @@ package com.jamycake.aiagent.domain.core.chat
 
 internal class Chat(
     val id: ChatId = ChatId(),
+    var name: String = "",
     messages: List<ChatMessage> = emptyList()
 ) {
 

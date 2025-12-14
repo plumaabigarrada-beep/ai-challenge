@@ -93,4 +93,31 @@ internal class Space(
         chat.addMember(chatMemberId) { ui.out(it.content) }
     }
 
+    fun removeChat(chatId: ChatId) {
+        val chat = chats[chatId] ?: return
+
+        // Remove chat member references from all agents
+        agents.values.forEach { agent ->
+            if (agent.state.chatId == chatId) {
+                agent.chatMemberId?.let { memberId ->
+                    chat.removeMember(memberId)
+                }
+                agent.chatMemberId = null
+                agent.state.chatId = null
+            }
+        }
+
+        // Remove chat member references from all users
+        users.values.forEach { user ->
+            if (user.chatId == chatId) {
+                user.chatMemberId?.let { memberId ->
+                    chat.removeMember(memberId)
+                }
+            }
+        }
+
+        // Remove the chat from the map
+        chats.remove(chatId)
+    }
+
 }
