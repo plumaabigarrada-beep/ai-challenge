@@ -9,7 +9,8 @@ internal interface Client {
     suspend fun sendContext(
         context: Context,
         temperature: Double,
-        model: String
+        model: String,
+        systemPrmpt: String = "",
     ) : Pair<ContextMessage, TokensUsage>
 
     fun models() : List<String>

@@ -32,10 +32,17 @@ internal class GeneralClient(
         context: Context,
         temperature: Double,
         model: String,
+        systemPrompt: String
     ): Pair<ContextMessage, TokensUsage> {
         // Convert ContextMessage to ResponseChatMessage
-        val messages = context.messages.map {
+        val simpleMessages = context.messages.map {
             ResponseChatMessage(role = it.role, content = it.content)
+        }
+
+        val messages = if (systemPrompt.isEmpty()) {
+            simpleMessages
+        } else {
+            listOf(ResponseChatMessage(role = "system", content = systemPrompt)) + simpleMessages
         }
 
         val request = ChatCompletionRequest(

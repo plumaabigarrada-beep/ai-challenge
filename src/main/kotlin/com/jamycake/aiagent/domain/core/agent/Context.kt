@@ -12,5 +12,9 @@ internal class Context(
         _messages.add(message)
     }
 
+    fun clear(){
+        _messages.clear()
+    }
+
 
 }

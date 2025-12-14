@@ -17,8 +17,12 @@ internal class Agent(
 
     private var clientType: ClientType = state.config.clientType
 
+    private val compressor = ContextCompressor(clients)
+
 
     suspend fun updateContext(chatMessage: ChatMessage) {
+
+        compressContextIfNeed()
 
         val contextMessage = ContextMessage(
             role = chatMessage.role,
@@ -27,8 +31,10 @@ internal class Agent(
 
         state.context.addMessage(contextMessage)
 
+
+
         val client = clients[clientType]!!
-        val (newContextMessage, tokensUsage) = client.sendContext(
+        val (agentMessage, tokensUsage) = client.sendContext(
             context = state.context,
             temperature = state.config.temperature,
             model = state.config.model
@@ -37,22 +43,40 @@ internal class Agent(
         stats.save(contextMessage.id, tokensUsage)
 
 
-        val newChatMessage = ChatMessage(
-            role = newContextMessage.role,
-            content = newContextMessage.content,
+        val newAgnetChatMessage = ChatMessage(
+            role = agentMessage.role,
+            content = agentMessage.content,
             name = state.name,
-            contextMessageId = newContextMessage.id
+            contextMessageId = agentMessage.id
         )
 
-        val sentContextMessage = newContextMessage.copy(chatMessageId = newChatMessage.id)
+        val sentAgentMessage = agentMessage.copy(chatMessageId = newAgnetChatMessage.id)
 
 
-        state.context.addMessage(sentContextMessage)
+        state.context.addMessage(sentAgentMessage)
         if (chatMemberId == null) return
         if (state.chatId == null) return
 
-        space.getChat(state.chatId!!)!!.sendMessage(chatMemberId!!, newChatMessage)
+        space.getChat(state.chatId!!)!!.sendMessage(chatMemberId!!, newAgnetChatMessage)
 
+    }
+
+    private suspend fun compressContextIfNeed() {
+        if (state.context.messages.size > state.config.autoCompressMessagesThreshold) {
+            val compressionResult = compressor.compress(
+                context = state.context,
+                threashold = state.config.autoCompressMessagesThreshold,
+                model = state.config.compressionModel,
+                temperature = state.config.compressionTemperature,
+                clientType = state.config.compressionClient
+            )
+
+            if (compressionResult != null) {
+                state.context.clear()
+                state.context.addMessage(compressionResult.first)
+                stats.save(compressionResult.first.id, compressionResult.second)
+            }
+        }
     }
 
 }
