@@ -17,7 +17,7 @@ internal fun agentsCommand(
             agents = agents,
             currentAgents = currentAgents
         ),
-        CreateNewAgent(
+        CreateNewAgentCommand(
             agents = agents,
             addAgent = addAgent,
             outMessage = outMessage

@@ -1,12 +1,12 @@
 package com.jamycake.aiagent.domain.slots
 
-import com.jamycake.aiagent.domain.core.user.User
+import com.jamycake.aiagent.domain.core.user.UserState
 
 internal interface Users {
 
 
-    fun save(user: User)
+    fun save(user: UserState)
 
-    fun get() : User
+    fun get() : UserState
 
 }

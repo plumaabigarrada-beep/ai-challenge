@@ -1,5 +1,6 @@
 package com.jamycake.aiagent.app.commands.space
 
+import com.jamycake.aiagent.domain.core.user.User
 import com.jamycake.aiagent.domain.slots.Agents
 import com.jamycake.aiagent.domain.slots.Chats
 import com.jamycake.aiagent.domain.slots.UI
@@ -20,7 +21,7 @@ internal class RestoreAppStateCommand(
     override suspend fun execute(args: String?) {
         val agents = this@RestoreAppStateCommand.agents.get()
         val chats = this@RestoreAppStateCommand.chats.getAllChats()
-        val user = users.get()
+        val userState = users.get()
 
 
         if (agents.isEmpty()) {
@@ -29,6 +30,15 @@ internal class RestoreAppStateCommand(
         agents.forEach {
             space.addAgent(it)
         }
+
+
+        val user = User.from(
+            userState = userState,
+            chat = space::getChat
+        )
+
+
+        space::getChat
 
         space.addChats(chats)
         space.addUser(user)

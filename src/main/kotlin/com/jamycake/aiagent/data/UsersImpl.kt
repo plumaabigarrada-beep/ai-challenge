@@ -1,21 +1,67 @@
 package com.jamycake.aiagent.data
 
-import com.jamycake.aiagent.domain.core.chat.Chat
 import com.jamycake.aiagent.domain.core.chat.ChatId
-import com.jamycake.aiagent.domain.core.user.User
+import com.jamycake.aiagent.domain.core.chat.ChatMemberId
+import com.jamycake.aiagent.domain.core.user.UserId
+import com.jamycake.aiagent.domain.core.user.UserState
 import com.jamycake.aiagent.domain.slots.Users
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import java.io.File
 
 internal class UsersImpl(
-    private val chat: (ChatId) -> Chat?
+    private val storagePath: String = "users/"
 ) : Users {
 
-    override fun save(user: User) {
-
+    private val json = Json {
+        prettyPrint = true
+        ignoreUnknownKeys = true
     }
 
-    override fun get(): User {
-        return User(
-            chat = chat
+    private val userFileName = "user.json"
+
+    override fun save(user: UserState) {
+        val savedData = SavedUserData(
+            id = user.id.value,
+            chatId = user.chatId?.value.orEmpty(),
+            chatMemberId = user.chatMemberId?.value.orEmpty()
+        )
+
+        val jsonString = json.encodeToString(savedData)
+
+        val userFolder = File(storagePath)
+        if (!userFolder.exists()) {
+            userFolder.mkdirs()
+        }
+
+        File(storagePath, userFileName).writeText(jsonString)
+    }
+
+    override fun get(): UserState {
+        val userFile = File(storagePath, userFileName)
+
+        if (!userFile.exists()) {
+            return UserState(
+                id = UserId(),
+                chatId = ChatId.empty(),
+                chatMemberId = ChatMemberId()
+            )
+        }
+
+        val savedData = json.decodeFromString<SavedUserData>(userFile.readText())
+
+        return UserState(
+            id = UserId(savedData.id),
+            chatId = ChatId(savedData.chatId),
+            chatMemberId = ChatMemberId(savedData.chatMemberId)
         )
     }
+
+    @Serializable
+    private data class SavedUserData(
+        val id: String,
+        val chatId: String,
+        val chatMemberId: String
+    )
 }

@@ -33,9 +33,7 @@ internal fun createApp() : App {
         stats = stats,
     )
 
-    val users: Users = UsersImpl(
-        chat = space::getChat
-    )
+    val users: Users = UsersImpl()
     val chats: Chats = ChatsImpl()
 
     val allCommands = commands(

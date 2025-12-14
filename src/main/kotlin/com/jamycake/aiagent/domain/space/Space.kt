@@ -60,9 +60,10 @@ internal class Space(
     fun wire(){
 
         users.values.forEach { user ->
-            val chat = chats[user.chatId]
-            chat?.addMember(user.chatMemberId) { }
-            chat?.addMember(user.chatMemberId) { ui.out(it.content) }
+            val chat = chats[user.chatId] ?: return@forEach
+            val chatMemberId = chat.addMember {  }
+            user.chatMemberId = chatMemberId
+            chat.addMember(chatMemberId) { ui.out(it.content) }
         }
 
         agents.values.forEach { agent ->
@@ -87,8 +88,9 @@ internal class Space(
         val chat = chats[chatId] ?: return
 
         // Wire the user to the new chat to receive messages
-        chat.addMember(user.chatMemberId) { }
-        chat.addMember(user.chatMemberId) { ui.out(it.content) }
+        val chatMemberId = chat.addMember {  }
+        user.chatMemberId = chatMemberId
+        chat.addMember(chatMemberId) { ui.out(it.content) }
     }
 
 }

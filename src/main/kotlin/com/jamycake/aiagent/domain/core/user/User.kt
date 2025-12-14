@@ -5,12 +5,14 @@ import com.jamycake.aiagent.domain.core.chat.ChatId
 import com.jamycake.aiagent.domain.core.chat.ChatMemberId
 import com.jamycake.aiagent.domain.core.chat.ChatMessage
 
-internal class User(
+internal class User private constructor(
     val id: UserId = UserId.empty(),
-    var chatId: ChatId = ChatId.empty(),
-    val chatMemberId: ChatMemberId = ChatMemberId(),
-    val chat: (ChatId) -> Chat?
+    var chatId: ChatId?,
+    var chatMemberId: ChatMemberId?,
+    private val chat: (ChatId) -> Chat?
 ) {
+
+
 
     suspend fun sendMessage(message: String) {
         val message = ChatMessage(
@@ -19,8 +21,33 @@ internal class User(
             content = message,
         )
 
-        val chat = chat(chatId)
-        chat?.sendMessage(chatMemberId, message)
+        if (chatId == null) return
+        if (chatMemberId == null) return
+        val chat = chat(chatId!!)
+        chat?.sendMessage(chatMemberId!!, message)
     }
+
+    fun getState() : UserState {
+        return UserState(
+            id = id,
+            chatId = chatId,
+            chatMemberId = chatMemberId
+        )
+    }
+
+    companion object {
+        fun from(
+            userState: UserState,
+            chat: (ChatId) -> Chat?
+        ) : User {
+            return User(
+                id = userState.id,
+                chatId = userState.chatId,
+                chatMemberId = userState.chatMemberId,
+                chat = chat
+            )
+        }
+    }
+
 
 }

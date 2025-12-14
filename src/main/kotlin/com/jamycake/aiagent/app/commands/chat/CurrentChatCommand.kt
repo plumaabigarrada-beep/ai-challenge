@@ -21,16 +21,16 @@ internal class CurrentChatCommand(
 
         val currentChatId = user.chatId
 
-        if (currentChatId.value.isEmpty()) {
+        if (currentChatId?.value?.isEmpty() == true) {
             ui.out("No chat is currently focused")
             return
         }
 
         // Find the chat
-        val chat = allChats().find { it.id.value == currentChatId.value }
+        val chat = allChats().find { it.id.value == currentChatId?.value }
 
         if (chat == null) {
-            ui.out("Current chat not found: ${currentChatId.value}")
+            ui.out("Current chat not found: ${currentChatId?.value}")
             ui.out("(The focused chat may have been deleted)")
             return
         }
