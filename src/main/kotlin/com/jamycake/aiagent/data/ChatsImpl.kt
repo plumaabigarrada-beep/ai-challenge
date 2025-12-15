@@ -20,7 +20,12 @@ internal class ChatsImpl(
 
     override suspend fun getChat(): Chat {
         val chatId = ChatId.empty()
-        val chat = Chat(id = chatId)
+        val chat = Chat(
+            id = chatId,
+            onMessageSent = { chat ->
+                saveChat(chat)
+            }
+        )
         return chat
     }
 
@@ -76,13 +81,20 @@ internal class ChatsImpl(
             Chat(
                 id = ChatId(savedData.id),
                 name = savedData.name,
-                messages = messages
+                messages = messages,
+                onMessageSent = { chat ->
+                    saveChat(chat)
+                }
             )
         }
     }
 
     override suspend fun newChat(): Chat {
-        return Chat()
+        return Chat(
+            onMessageSent = { chat ->
+                saveChat(chat)
+            }
+        )
     }
 
     override suspend fun deleteChat(chat: Chat) {

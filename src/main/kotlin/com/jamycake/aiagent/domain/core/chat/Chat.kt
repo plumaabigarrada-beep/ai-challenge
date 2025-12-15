@@ -3,7 +3,8 @@ package com.jamycake.aiagent.domain.core.chat
 internal class Chat(
     val id: ChatId = ChatId(),
     var name: String = "",
-    messages: List<ChatMessage> = emptyList()
+    messages: List<ChatMessage> = emptyList(),
+    private val onMessageSent: suspend (Chat) -> Unit = {}
 ) {
 
     private val _messages = messages.toMutableList()
@@ -27,6 +28,9 @@ internal class Chat(
                 function.invoke(message)
             }
         }
+
+        // Save chat state after message is sent
+        onMessageSent(this)
     }
 
 }

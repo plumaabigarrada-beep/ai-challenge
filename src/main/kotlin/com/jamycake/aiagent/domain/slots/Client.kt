@@ -1,8 +1,6 @@
 package com.jamycake.aiagent.domain.slots
 
 import com.jamycake.aiagent.domain.core.agent.Context
-import com.jamycake.aiagent.domain.core.agent.ContextMessage
-import com.jamycake.aiagent.domain.core.agent.TokensUsage
 
 internal interface Client {
 
@@ -10,8 +8,9 @@ internal interface Client {
         context: Context,
         temperature: Double,
         model: String,
-        systemPrmpt: String = "",
-    ) : Pair<ContextMessage, TokensUsage>
+        systemPrompt: String = "",
+        tools: List<Map<String, Any>>? = null
+    ) : ClientResponse
 
     fun models() : List<String>
 

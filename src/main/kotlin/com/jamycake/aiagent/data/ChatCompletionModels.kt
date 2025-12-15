@@ -2,6 +2,7 @@ package com.jamycake.aiagent.data
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 
 /**
  * Shared JSON parser configuration for all OpenAI-compatible clients
@@ -9,7 +10,27 @@ import kotlinx.serialization.json.Json
 val jsonParser = Json {
     ignoreUnknownKeys = true
     prettyPrint = true
+    encodeDefaults = true
 }
+
+/**
+ * Tool call function details
+ */
+@Serializable
+data class ToolCallFunction(
+    val name: String,
+    val arguments: String
+)
+
+/**
+ * Tool call object in API response
+ */
+@Serializable
+data class ApiToolCall(
+    val id: String,
+    val type: String = "function",
+    val function: ToolCallFunction
+)
 
 /**
  * Chat message in OpenAI format (role + content)
@@ -17,7 +38,9 @@ val jsonParser = Json {
 @Serializable
 data class ResponseChatMessage(
     val role: String,
-    val content: String
+    val content: String? = null,
+    val tool_call_id: String? = null,
+    val tool_calls: List<ApiToolCall>? = null
 )
 
 /**
@@ -28,7 +51,8 @@ data class ChatCompletionRequest(
     val model: String,
     val messages: List<ResponseChatMessage>,
     val temperature: Double? = null,
-    val stream: Boolean = false
+    val stream: Boolean = false,
+    val tools: JsonElement? = null
 )
 
 /**

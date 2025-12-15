@@ -5,7 +5,7 @@ import com.jamycake.aiagent.domain.core.user.User
 import com.jamycake.aiagent.domain.slots.Agents
 import com.jamycake.aiagent.domain.slots.Chats
 import com.jamycake.aiagent.domain.slots.UI
-import com.jamycake.aiagent.domain.space.Space
+import com.jamycake.aiagent.domain.core.Space
 import com.jamycake.aiagent.terminal.Command
 
 internal class DeleteChatCommand(

@@ -1,4 +1,4 @@
-package com.jamycake.aiagent.domain.space
+package com.jamycake.aiagent.domain.core
 
 import com.jamycake.aiagent.domain.core.agent.Agent
 import com.jamycake.aiagent.domain.core.agent.AgentId
@@ -17,6 +17,7 @@ internal class Space(
     private val users = mutableMapOf<UserId, User>()
 
     var currentUser: User? = null
+    var currentAgent: Agent? = null
 
     val allAgents get() = agents.values.toList()
     val allChats get() = chats.values.toList()

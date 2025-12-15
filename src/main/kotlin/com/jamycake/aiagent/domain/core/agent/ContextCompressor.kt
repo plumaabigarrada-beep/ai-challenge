@@ -1,6 +1,7 @@
 package com.jamycake.aiagent.domain.core.agent
 
 import com.jamycake.aiagent.domain.slots.Client
+import com.jamycake.aiagent.domain.slots.ClientResponse
 
 internal class ContextCompressor(
     private val clients: Map<ClientType, Client>
@@ -21,19 +22,20 @@ internal class ContextCompressor(
 
         val compressionPrompt = CompressionPrompt.createCompressionRequest(context.messages)
 
-        context.clear()
+        context.clearMessages()
 
 
 
 
-        val result = client.sendContext(
+        val response = client.sendContext(
             context = context,
             temperature = temperature,
             model = model,
-            systemPrmpt = compressionPrompt
+            systemPrompt = compressionPrompt,
+            tools = null
         )
 
-        return result
+        return Pair(response.message, response.usage)
 
     }
 

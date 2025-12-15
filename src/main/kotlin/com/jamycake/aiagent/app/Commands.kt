@@ -5,8 +5,9 @@ import com.jamycake.aiagent.app.commands.chat.chatCommands
 import com.jamycake.aiagent.app.commands.help.HelpCommand
 import com.jamycake.aiagent.app.commands.space.spaceCommands
 import com.jamycake.aiagent.app.commands.stats.statsCommands
+import com.jamycake.aiagent.domain.core.tools.Tools
 import com.jamycake.aiagent.domain.slots.*
-import com.jamycake.aiagent.domain.space.Space
+import com.jamycake.aiagent.domain.core.Space
 import com.jamycake.aiagent.terminal.Command
 
 internal fun commands(
@@ -15,7 +16,8 @@ internal fun commands(
     stats: Stats,
     terminalUI: UI,
     agents: Agents,
-    space: Space
+    space: Space,
+    tools: Tools
 ) : List<Command> {
     val chatCommands = chatCommands(
         getCurrentUser = { space.currentUser },
@@ -31,7 +33,10 @@ internal fun commands(
         agents = agents,
         currentAgents = space::allAgents,
         addAgent = space::addAgent,
-        outMessage = terminalUI::out
+        outMessage = terminalUI::out,
+        space = space,
+        tools = tools,
+        ui = terminalUI
     )
     val spaceCommands = spaceCommands(
         agents,

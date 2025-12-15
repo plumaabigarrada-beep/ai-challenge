@@ -1,10 +1,10 @@
 package com.jamycake.aiagent.domain.core.agent
 
+import com.jamycake.aiagent.domain.core.Space
 import com.jamycake.aiagent.domain.core.chat.ChatMemberId
 import com.jamycake.aiagent.domain.core.chat.ChatMessage
 import com.jamycake.aiagent.domain.slots.Client
 import com.jamycake.aiagent.domain.slots.Stats
-import com.jamycake.aiagent.domain.space.Space
 
 internal class Agent(
     val id: AgentId = AgentId(),
@@ -32,36 +32,95 @@ internal class Agent(
 
         state.context.addMessage(contextMessage)
 
-
-
         val client = clients[clientType]!!
-        val (agentMessage, tokensUsage) = client.sendContext(
-            context = state.context,
-            temperature = state.config.temperature,
-            model = state.config.model
-        )
+        val maxToolRounds = 10
+        var roundCount = 0
 
-        stats.save(contextMessage.id, tokensUsage)
+        // Tool execution loop
+        while (roundCount < maxToolRounds) {
+            roundCount++
 
+            val response = client.sendContext(
+                context = state.context,
+                temperature = state.config.temperature,
+                model = state.config.model,
+                tools = state.context.protocol.getToolDefinitions().takeIf { it.isNotEmpty() }
+            )
 
-        val newAgnetChatMessage = ChatMessage(
-            role = agentMessage.role,
-            content = agentMessage.content,
-            name = state.name,
-            contextMessageId = agentMessage.id
-        )
+            // Save stats
+            stats.save(response.message.id, response.usage)
 
-        val sentAgentMessage = agentMessage.copy(chatMessageId = newAgnetChatMessage.id)
+            if (response.toolCalls.isNotEmpty()) {
+                // Tool calls requested
+                state.context.addMessage(response.message)
 
+                // Send assistant's content to chat if present
+                if (chatMemberId != null && state.chatId != null) {
+                    if (response.message.content.isNotEmpty()) {
+                        val contentMessage = ChatMessage(
+                            role = response.message.role,
+                            content = response.message.content,
+                            name = state.name,
+                            contextMessageId = response.message.id
+                        )
+                        space.getChat(state.chatId!!)!!.sendMessage(chatMemberId!!, contentMessage)
+                    }
 
-        state.context.addMessage(sentAgentMessage)
-        if (chatMemberId == null) return
-        if (state.chatId == null) return
+                    // Show which tools are being called
+                    val toolCallMessage = buildString {
+                        append("[Calling tools: ")
+                        response.toolCalls.joinToString(", ") { it.name }.let { append(it) }
+                        append("]")
+                    }
 
-        space.getChat(state.chatId!!)!!.sendMessage(chatMemberId!!, newAgnetChatMessage)
+                    val toolNotification = ChatMessage(
+                        role = "assistant",
+                        content = toolCallMessage,
+                        name = state.name,
+                        contextMessageId = response.message.id
+                    )
+                    space.getChat(state.chatId!!)!!.sendMessage(chatMemberId!!, toolNotification)
+                }
 
-        // Save agent state and chat after sending message
-        onMessageSent(this)
+                // Execute tools in parallel
+                val toolResults = state.context.tools.executeToolCalls(
+                    response.toolCalls
+                )
+
+                // Add tool results to context
+                state.context.addToolResults(toolResults)
+
+                // Continue loop to send results back to LLM
+            } else {
+                // Final response - no more tools
+                val newAgentChatMessage = ChatMessage(
+                    role = response.message.role,
+                    content = response.message.content,
+                    name = state.name,
+                    contextMessageId = response.message.id
+                )
+
+                val sentAgentMessage = response.message.copy(
+                    chatMessageId = newAgentChatMessage.id
+                )
+
+                state.context.addMessage(sentAgentMessage)
+
+                if (chatMemberId != null && state.chatId != null) {
+                    space.getChat(state.chatId!!)!!.sendMessage(
+                        chatMemberId!!,
+                        newAgentChatMessage
+                    )
+                }
+
+                onMessageSent(this)
+                break  // Exit loop
+            }
+        }
+
+        if (roundCount >= maxToolRounds) {
+            println("Warning: Tool execution limit reached for agent ${state.name}")
+        }
 
     }
 
@@ -76,7 +135,7 @@ internal class Agent(
             )
 
             if (compressionResult != null) {
-                state.context.clear()
+                state.context.clearMessages()
                 state.context.addMessage(compressionResult.first)
                 stats.save(compressionResult.first.id, compressionResult.second)
             }

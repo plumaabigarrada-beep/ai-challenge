@@ -20,7 +20,7 @@ data class Config(
     var compressionTemperature: Double = 0.0,
     var showTokens: Boolean = true,
     var autoCompressEnabled: Boolean = false,
-    var autoCompressMessagesThreshold: Int = 5,
+    var autoCompressMessagesThreshold: Int = 10,
     var autoCompressThreshold: Double = 0.80, // Compress at 80% of context window
     var autoCompressNotify: Boolean = true // Notify user when auto-compressing
 )

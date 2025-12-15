@@ -7,4 +7,6 @@ internal data class ContextMessage (
     val role: String,
     val content: String,
     val chatMessageId: String? = null,
+    val toolCallId: String? = null,
+    val toolCalls: List<ToolCall>? = null
 )

@@ -4,7 +4,7 @@ import com.jamycake.aiagent.domain.core.agent.Agent
 import com.jamycake.aiagent.domain.core.agent.AgentId
 import com.jamycake.aiagent.domain.core.chat.Chat
 import com.jamycake.aiagent.domain.core.chat.ChatId
-import com.jamycake.aiagent.domain.space.Space
+import com.jamycake.aiagent.domain.core.Space
 import com.jamycake.aiagent.domain.slots.UI
 import com.jamycake.aiagent.terminal.Command
 

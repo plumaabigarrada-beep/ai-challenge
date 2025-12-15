@@ -1,13 +1,13 @@
 package com.jamycake.aiagent.data
 
 import com.jamycake.aiagent.domain.core.agent.*
+import com.jamycake.aiagent.domain.core.tools.Tools
 import com.jamycake.aiagent.domain.core.chat.ChatId
 import com.jamycake.aiagent.domain.core.chat.ChatMemberId
 import com.jamycake.aiagent.domain.slots.Agents
-import com.jamycake.aiagent.domain.slots.Chats
 import com.jamycake.aiagent.domain.slots.Client
 import com.jamycake.aiagent.domain.slots.Stats
-import com.jamycake.aiagent.domain.space.Space
+import com.jamycake.aiagent.domain.core.Space
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -17,7 +17,7 @@ internal class AgentsImpl(
     private val clients: Map<ClientType, Client>,
     private val space: Space,
     private val stats: Stats,
-    private val chats: Chats,
+    private val tools: Tools,
     private val storagePath: String = "agents/"
 ) : Agents {
 
@@ -44,8 +44,16 @@ internal class AgentsImpl(
                         content = msg.content,
                         chatMessageId = msg.chatMessageId
                     )
-                }
+                },
+                tools = tools
             )
+
+            // Restore tools from saved tool names
+            savedData.state.toolNames.forEach { toolName ->
+                tools.getTool(toolName)?.let { tool ->
+                    context.protocol.registerTool(tool)
+                }
+            }
 
             val agentState = AgentState(
                 name = savedData.state.name,
@@ -66,12 +74,6 @@ internal class AgentsImpl(
                 onMessageSent = { agent ->
                     // Save agent state
                     save(agent)
-                    // Save chat
-                    agent.state.chatId?.let { chatId ->
-                        space.getChat(chatId)?.let { chat ->
-                            chats.saveChat(chat)
-                        }
-                    }
                 }
             )
         }
@@ -97,7 +99,8 @@ internal class AgentsImpl(
                     content = msg.content,
                     chatMessageId = msg.chatMessageId
                 )
-            }
+            },
+            toolNames = agentState.context.protocol.getTools().map { it.name }
         )
 
         val savedData = SavedAgentData(
@@ -122,21 +125,19 @@ internal class AgentsImpl(
         return defauldAgent(
             clients = clients,
             space = space,
-            stats = stats,
-            chats = chats
+            stats = stats
         )
     }
 
     private fun defauldAgent(
         clients: Map<ClientType, Client>,
         space: Space,
-        stats: Stats,
-        chats: Chats
+        stats: Stats
     ): Agent {
         val agentState = AgentState(
             name = "",
             config = Config(temperature = 0.7),
-            context = Context(messages = emptyList()),
+            context = Context(messages = emptyList(), tools = tools),
             chatId = null
         )
 
@@ -148,12 +149,6 @@ internal class AgentsImpl(
             onMessageSent = { agent ->
                 // Save agent state
                 save(agent)
-                // Save chat
-                agent.state.chatId?.let { chatId ->
-                    space.getChat(chatId)?.let { chat ->
-                        chats.saveChat(chat)
-                    }
-                }
             }
         )
         return agent
@@ -171,7 +166,8 @@ internal class AgentsImpl(
         val name: String,
         val chatId: String,
         val config: Config,
-        val contextMessages: List<SavedContextMessage>
+        val contextMessages: List<SavedContextMessage>,
+        val toolNames: List<String> = emptyList()
     )
 
     @Serializable

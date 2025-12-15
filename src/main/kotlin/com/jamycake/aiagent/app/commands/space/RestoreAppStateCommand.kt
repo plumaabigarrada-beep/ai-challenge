@@ -5,7 +5,7 @@ import com.jamycake.aiagent.domain.slots.Agents
 import com.jamycake.aiagent.domain.slots.Chats
 import com.jamycake.aiagent.domain.slots.UI
 import com.jamycake.aiagent.domain.slots.Users
-import com.jamycake.aiagent.domain.space.Space
+import com.jamycake.aiagent.domain.core.Space
 import com.jamycake.aiagent.terminal.Command
 
 
